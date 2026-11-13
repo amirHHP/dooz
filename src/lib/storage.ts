@@ -67,11 +67,24 @@ class VercelBlobStorageAdapter implements StorageAdapter {
     // Dynamic import to prevent crash when @vercel/blob is unneeded
     // @ts-ignore
     const { put } = await import("@vercel/blob");
-    const blob = await put(pathname, buffer, {
-      access: "public",
-      token: this.token,
-      contentType: options?.contentType,
-    });
+    let blob;
+    try {
+      blob = await put(pathname, buffer, {
+        access: "public",
+        token: this.token,
+        contentType: options?.contentType,
+      });
+    } catch (err: any) {
+      if (err?.message?.includes("private") || err?.message?.includes("Private")) {
+        blob = await put(pathname, buffer, {
+          access: "private",
+          token: this.token,
+          contentType: options?.contentType,
+        });
+      } else {
+        throw err;
+      }
+    }
 
     return {
       url: blob.url,
