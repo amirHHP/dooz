@@ -1,0 +1,238 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  USER
+  CREATOR
+  ADMIN
+}
+
+enum DraftingMethod {
+  MULLER
+  METRIC
+  GRLAWEIN
+}
+
+enum BlockType {
+  SKIRT
+  BODICE
+  SLEEVE
+  TROUSER
+}
+
+enum FitType {
+  TIGHT
+  CLASSIC
+  LOOSE
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum TransactionType {
+  CREDIT
+  DEBIT
+  COMMISSION
+  PAYOUT
+}
+
+enum PayoutStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PAID
+}
+
+enum PurchaseStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+model User {
+  id              String              @id @default(cuid())
+  name            String
+  email           String              @unique
+  phone           String?             @unique
+  passwordHash    String?
+  role            Role                @default(USER)
+  avatar          String?
+  bio             String?
+  shebaNumber     String?
+  walletBalance   Int                 @default(0) // In Iranian Toman
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  clients         ClientProfile[]
+  createdPatterns PatternProduct[]    @relation("CreatorPatterns")
+  purchases       Purchase[]
+  transactions    WalletTransaction[]
+  payoutRequests  PayoutRequest[]
+  reviews         Review[]
+  savedDrafts     SavedDraft[]
+
+  @@index([email])
+  @@index([phone])
+}
+
+model ClientProfile {
+  id            String       @id @default(cuid())
+  tailorId      String
+  tailor        User         @relation(fields: [tailorId], references: [id], onDelete: Cascade)
+  firstName     String
+  lastName      String
+  phone         String?
+  gender        String       @default("FEMALE")
+  measurements  Json         // 26 Anthropometric measurements (in cm)
+  postureTags   String[]     // Anatomical irregularity tags (e.g. ["PROMINENT_ABDOMEN", "SWAYBACK"])
+  fitPreference FitType      @default(CLASSIC)
+  notes         String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  savedDrafts   SavedDraft[]
+
+  @@index([tailorId])
+}
+
+model PatternProduct {
+  id                 String         @id @default(cuid())
+  creatorId          String
+  creator            User           @relation("CreatorPatterns", fields: [creatorId], references: [id], onDelete: Cascade)
+  title              String
+  slug               String         @unique
+  description        String
+  category           String         // TOPS_BLOUSES, DRESSES, OUTERWEAR, SKIRTS, TROUSERS
+  baseBlock          BlockType?     // SKIRT, BODICE, SLEEVE, TROUSER
+  draftingMethod     DraftingMethod @default(MULLER)
+  fitType            FitType        @default(CLASSIC)
+  difficulty         Difficulty     @default(INTERMEDIATE)
+  price              Int            @default(0) // In Toman (0 = Free)
+  coverImage         String
+  galleryImages      String[]
+  technicalFlatFront String         // SVG or vector image path
+  technicalFlatBack  String         // SVG or vector image path
+  fabricRequirements Json           // Recommended fabrics, meters for 110cm & 150cm bolts
+  attachmentType     String         @default("PARAMETRIC_PRESET") // PARAMETRIC_PRESET or BLUEPRINT_PDF
+  parametricConfig   Json?          // Preset rules & formulas for Studio
+  blueprintPdfUrl    String?        // Multi-size graded PDF bundle URL
+  isPublished        Boolean        @default(true)
+  salesCount         Int            @default(0)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  steps              PatternStep[]
+  purchases          Purchase[]
+  reviews            Review[]
+
+  @@index([creatorId])
+  @@index([category])
+  @@index([draftingMethod])
+  @@index([difficulty])
+  @@index([price])
+}
+
+model PatternStep {
+  id               String         @id @default(cuid())
+  patternId        String
+  pattern          PatternProduct @relation(fields: [patternId], references: [id], onDelete: Cascade)
+  stepOrder        Int
+  title            String
+  description      String
+  illustrationUrl  String?
+  technicalDetails Json?
+
+  @@index([patternId, stepOrder])
+}
+
+model Purchase {
+  id             String         @id @default(cuid())
+  userId         String
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  patternId      String
+  pattern        PatternProduct @relation(fields: [patternId], references: [id], onDelete: Restrict)
+  pricePaid      Int            // In Toman
+  transactionRef String         @unique
+  status         PurchaseStatus @default(COMPLETED)
+  createdAt      DateTime       @default(now())
+
+  @@unique([userId, patternId])
+  @@index([userId])
+  @@index([patternId])
+}
+
+model WalletTransaction {
+  id           String          @id @default(cuid())
+  userId       String
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount       Int             // In Toman (positive for credit, negative for debit)
+  type         TransactionType
+  balanceAfter Int             // In Toman
+  referenceId  String?         // Purchase ID or PayoutRequest ID
+  description  String
+  createdAt    DateTime        @default(now())
+
+  @@index([userId])
+  @@index([type])
+}
+
+model PayoutRequest {
+  id                String       @id @default(cuid())
+  creatorId         String
+  creator           User         @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  amount            Int          // In Toman
+  shebaNumber       String
+  accountHolderName String
+  bankName          String?
+  status            PayoutStatus @default(PENDING)
+  processedAt       DateTime?
+  adminNotes        String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([creatorId])
+  @@index([status])
+}
+
+model Review {
+  id          String         @id @default(cuid())
+  userId      String
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  patternId   String
+  pattern     PatternProduct @relation(fields: [patternId], references: [id], onDelete: Cascade)
+  rating      Int            // 1 to 5
+  fitFeedback String         @default("TRUE_TO_SIZE") // RUNS_SMALL, TRUE_TO_SIZE, RUNS_LARGE
+  title       String?
+  comment     String
+  createdAt   DateTime       @default(now())
+
+  @@unique([userId, patternId])
+  @@index([patternId])
+}
+
+model SavedDraft {
+  id           String         @id @default(cuid())
+  userId       String
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clientId     String?
+  client       ClientProfile? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  title        String
+  baseBlock    BlockType
+  method       DraftingMethod @default(MULLER)
+  measurements Json           // Anthropometric measurements snapshot
+  adjustments  Json           // Posture toggles & fit preference
+  studioState  Json           // Timeline step, zoom, active layers, export settings
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([clientId])
+}
