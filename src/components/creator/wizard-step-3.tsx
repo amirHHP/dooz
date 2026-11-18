@@ -63,14 +63,14 @@ export function WizardStep3({ data, onChange, errors }: WizardStep3Props) {
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => onChange({ coverImage: "/images/patterns/casual-raglan-trench-coat.jpg" })}
+                onClick={() => onChange({ coverImage: "/images/patterns/casual-trench-coat-raglan.svg" })}
                 className="text-xs px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 transition-colors"
               >
                 نمونه ۱: ترنچ کت
               </button>
               <button
                 type="button"
-                onClick={() => onChange({ coverImage: "/images/patterns/princess-seam-evening-dress.jpg" })}
+                onClick={() => onChange({ coverImage: "/images/patterns/princess-seam-evening-dress.svg" })}
                 className="text-xs px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 transition-colors"
               >
                 نمونه ۲: پیراهن شب

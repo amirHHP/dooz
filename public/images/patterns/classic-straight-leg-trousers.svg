@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-str" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#eff6ff"/>
+      <stop offset="100%" stop-color="#dbeafe"/>
+    </linearGradient>
+    <pattern id="grid-str" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#2563eb" stroke-width="0.5" stroke-opacity="0.12"/>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#bg-str)"/>
+  <rect width="100%" height="100%" fill="url(#grid-str)"/>
+  
+  <rect x="30" y="30" width="740" height="540" rx="16" fill="none" stroke="#1d4ed8" stroke-width="1.5" stroke-dasharray="6 4" stroke-opacity="0.3"/>
+  
+  <!-- Classic Straight-Leg Trousers -->
+  <g transform="translate(250, 65)">
+    <!-- Main Pants Body (Straight Silhouette) -->
+    <path d="M 75 40 L 225 40 L 235 420 L 175 420 L 150 180 L 125 420 L 65 420 Z" fill="#ffffff" stroke="#1e3a8a" stroke-width="3.5" stroke-linejoin="round"/>
+    
+    <!-- Tailored Waistband -->
+    <path d="M 75 40 L 225 40 L 225 72 L 75 72 Z" fill="#dbeafe" stroke="#1e3a8a" stroke-width="3"/>
+    
+    <!-- Fly Front -->
+    <path d="M 150 72 L 150 160 C 142 160 138 150 138 135" fill="none" stroke="#1e3a8a" stroke-width="2.2" stroke-dasharray="4 2"/>
+    
+    <!-- Sharp Ironed Crease Lines (Center) -->
+    <line x1="95" y1="85" x2="95" y2="415" stroke="#2563eb" stroke-width="1.8" stroke-dasharray="8 4"/>
+    <line x1="205" y1="85" x2="205" y2="415" stroke="#2563eb" stroke-width="1.8" stroke-dasharray="8 4"/>
+    
+    <!-- Welt Pockets (جیب فیلتابی) -->
+    <rect x="175" y="88" width="40" height="10" rx="2" fill="#dbeafe" stroke="#1e3a8a" stroke-width="1.8"/>
+    <rect x="85" y="88" width="40" height="10" rx="2" fill="#dbeafe" stroke="#1e3a8a" stroke-width="1.8"/>
+    
+    <!-- Hem Stitches -->
+    <line x1="67" y1="405" x2="123" y2="405" stroke="#1e3a8a" stroke-width="1.5" stroke-dasharray="3 2"/>
+    <line x1="177" y1="405" x2="233" y2="405" stroke="#1e3a8a" stroke-width="1.5" stroke-dasharray="3 2"/>
+  </g>
+  
+  <g transform="translate(400, 525)" text-anchor="middle">
+    <rect x="-195" y="-30" width="390" height="42" rx="21" fill="#1e3a8a"/>
+    <text y="-4" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="bold">شلوار راسته با خط اتو و جیب فیلتابی</text>
+  </g>
+</svg>

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-dress" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#eef2ff"/>
+      <stop offset="100%" stop-color="#e0e7ff"/>
+    </linearGradient>
+    <pattern id="grid-dress" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#4f46e5" stroke-width="0.5" stroke-opacity="0.12"/>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#bg-dress)"/>
+  <rect width="100%" height="100%" fill="url(#grid-dress)"/>
+  
+  <rect x="30" y="30" width="740" height="540" rx="16" fill="none" stroke="#4338ca" stroke-width="1.5" stroke-dasharray="6 4" stroke-opacity="0.3"/>
+  
+  <!-- Princess Seam Evening Dress -->
+  <g transform="translate(250, 50)">
+    <!-- Sweetheart / Scoop Neckline & Sculpted Evening Dress Silhouette -->
+    <path d="M 115 45 Q 150 70 185 45 L 210 110 Q 185 180 185 210 L 260 410 Q 150 430 40 410 L 115 210 Q 115 180 90 110 Z" fill="#ffffff" stroke="#312e81" stroke-width="3.5" stroke-linejoin="round"/>
+    
+    <!-- Princess Cut Seams (From Shoulder Armhole over Bust to Floor Hem) -->
+    <!-- Left Princess Seam -->
+    <path d="M 100 95 Q 125 140 125 180 Q 125 240 85 412" fill="none" stroke="#4f46e5" stroke-width="2.5" stroke-dasharray="6 2"/>
+    
+    <!-- Right Princess Seam -->
+    <path d="M 200 95 Q 175 140 175 180 Q 175 240 215 412" fill="none" stroke="#4f46e5" stroke-width="2.5" stroke-dasharray="6 2"/>
+    
+    <!-- Center Front Construction Guideline -->
+    <line x1="150" y1="58" x2="150" y2="420" stroke="#6366f1" stroke-width="1.5" stroke-dasharray="8 4"/>
+    
+    <!-- Waistline Accent Darts -->
+    <line x1="125" y1="190" x2="135" y2="225" stroke="#312e81" stroke-width="1.8"/>
+    <line x1="175" y1="190" x2="165" y2="225" stroke="#312e81" stroke-width="1.8"/>
+  </g>
+  
+  <g transform="translate(400, 525)" text-anchor="middle">
+    <rect x="-195" y="-30" width="390" height="42" rx="21" fill="#312e81"/>
+    <text y="-4" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="bold">پیراهن مجلسی برش پرنسسی</text>
+  </g>
+</svg>

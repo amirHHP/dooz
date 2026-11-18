@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { EarningsChart, MonthlyEarningsPoint } from "@/components/creator/earnings-chart";
 import { formatToman, formatJalaliDate, toLatinDigits } from "@/lib/format";
 import { validateSheba, ShebaValidationResult } from "@/lib/ledger";
@@ -16,6 +18,15 @@ interface TransactionRow {
 }
 
 export default function CreatorEarningsPage() {
+  const router = useRouter();
+  const { data: session, status } = useSession();
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login?callbackUrl=/creator/earnings");
+    }
+  }, [status, router]);
+
   const [timeFilter, setTimeFilter] = useState<"LAST_30_DAYS" | "LAST_6_MONTHS" | "ALL_TIME">("LAST_6_MONTHS");
   const [walletBalance, setWalletBalance] = useState(2400000);
   const [grossSales, setGrossSales] = useState(5000000);
@@ -60,6 +71,12 @@ export default function CreatorEarningsPage() {
   const [payoutAmount, setPayoutAmount] = useState<string>("250000");
   const [shebaInput, setShebaInput] = useState<string>("IR470569876543210123456789");
   const [accountHolder, setAccountHolder] = useState<string>("مهسا رادمنش");
+
+  useEffect(() => {
+    if (session?.user?.name) {
+      setAccountHolder(session.user.name);
+    }
+  }, [session]);
   const [shebaValidation, setShebaValidation] = useState<ShebaValidationResult>({ valid: true, bankName: "بانک سامان" });
   const [payoutError, setPayoutError] = useState<string | null>(null);
   const [payoutSuccess, setPayoutSuccess] = useState<string | null>(null);

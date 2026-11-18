@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-trench" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fffbeb"/>
+      <stop offset="100%" stop-color="#fef3c7"/>
+    </linearGradient>
+    <pattern id="grid-trench" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#d97706" stroke-width="0.5" stroke-opacity="0.12"/>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#bg-trench)"/>
+  <rect width="100%" height="100%" fill="url(#grid-trench)"/>
+  
+  <rect x="30" y="30" width="740" height="540" rx="16" fill="none" stroke="#b45309" stroke-width="1.5" stroke-dasharray="6 4" stroke-opacity="0.3"/>
+  
+  <!-- Trench Coat Illustration -->
+  <g transform="translate(240, 50)">
+    <!-- Coat Body -->
+    <path d="M 120 40 L 200 40 L 260 160 L 225 175 L 200 110 L 220 400 L 100 400 L 120 110 L 95 175 L 60 160 Z" fill="#ffffff" stroke="#78350f" stroke-width="3.5" stroke-linejoin="round"/>
+    
+    <!-- Collar & Lapels -->
+    <path d="M 120 40 L 160 85 L 140 130 L 160 140 L 160 210 L 140 120 Z" fill="#fef3c7" stroke="#78350f" stroke-width="2.5"/>
+    <path d="M 200 40 L 160 85 L 180 130 L 160 140" fill="#fef3c7" stroke="#78350f" stroke-width="2.5"/>
+    
+    <!-- Raglan Sleeve Seam Lines -->
+    <line x1="130" y1="50" x2="105" y2="120" stroke="#b45309" stroke-width="2" stroke-dasharray="4 2"/>
+    <line x1="190" y1="50" x2="215" y2="120" stroke="#b45309" stroke-width="2" stroke-dasharray="4 2"/>
+    
+    <!-- Storm Flap (Gun Patch) -->
+    <path d="M 125 60 L 155 70 L 150 140 L 120 115 Z" fill="#fef3c7" stroke="#78350f" stroke-width="2"/>
+    
+    <!-- Belt with Buckle -->
+    <rect x="90" y="210" width="140" height="24" rx="4" fill="#d97706" stroke="#78350f" stroke-width="2"/>
+    <rect x="145" y="206" width="30" height="32" rx="3" fill="#ffffff" stroke="#78350f" stroke-width="2.5"/>
+    <line x1="160" y1="206" x2="160" y2="238" stroke="#78350f" stroke-width="3"/>
+    
+    <!-- Double-breasted Buttons -->
+    <circle cx="140" cy="170" r="5" fill="#78350f"/>
+    <circle cx="180" cy="170" r="5" fill="#78350f"/>
+    <circle cx="140" cy="265" r="5" fill="#78350f"/>
+    <circle cx="180" cy="265" r="5" fill="#78350f"/>
+    <circle cx="140" cy="320" r="5" fill="#78350f"/>
+    <circle cx="180" cy="320" r="5" fill="#78350f"/>
+    
+    <!-- Slanted Welt Pockets -->
+    <rect x="95" y="270" width="35" height="12" rx="2" transform="rotate(15 95 270)" fill="#fef3c7" stroke="#78350f" stroke-width="2"/>
+    <rect x="190" y="270" width="35" height="12" rx="2" transform="rotate(-15 190 270)" fill="#fef3c7" stroke="#78350f" stroke-width="2"/>
+  </g>
+  
+  <g transform="translate(400, 525)" text-anchor="middle">
+    <rect x="-190" y="-30" width="380" height="42" rx="21" fill="#78350f"/>
+    <text y="-4" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="bold">بارانی ترنج کژوال با آستین رگلان</text>
+  </g>
+</svg>

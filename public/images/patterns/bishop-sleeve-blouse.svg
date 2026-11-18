@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-blouse" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#faf5ff"/>
+      <stop offset="100%" stop-color="#f3e8ff"/>
+    </linearGradient>
+    <pattern id="grid-blouse" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#9333ea" stroke-width="0.5" stroke-opacity="0.12"/>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#bg-blouse)"/>
+  <rect width="100%" height="100%" fill="url(#grid-blouse)"/>
+  
+  <rect x="30" y="30" width="740" height="540" rx="16" fill="none" stroke="#7e22ce" stroke-width="1.5" stroke-dasharray="6 4" stroke-opacity="0.3"/>
+  
+  <!-- Bishop Sleeve Blouse -->
+  <g transform="translate(250, 70)">
+    <!-- Dramatic Bishop Sleeves -->
+    <!-- Left Sleeve -->
+    <path d="M 90 60 Q 20 180 35 290 L 70 300 Q 80 200 95 140 Z" fill="#ffffff" stroke="#581c87" stroke-width="3" stroke-linejoin="round"/>
+    <!-- Left Cuff with Buttons -->
+    <rect x="30" y="290" width="42" height="30" rx="3" fill="#f3e8ff" stroke="#581c87" stroke-width="2"/>
+    <circle cx="51" cy="300" r="2.5" fill="#581c87"/>
+    <circle cx="51" cy="310" r="2.5" fill="#581c87"/>
+    
+    <!-- Right Sleeve -->
+    <path d="M 210 60 Q 280 180 265 290 L 230 300 Q 220 200 205 140 Z" fill="#ffffff" stroke="#581c87" stroke-width="3" stroke-linejoin="round"/>
+    <!-- Right Cuff with Buttons -->
+    <rect x="228" y="290" width="42" height="30" rx="3" fill="#f3e8ff" stroke="#581c87" stroke-width="2"/>
+    <circle cx="249" cy="300" r="2.5" fill="#581c87"/>
+    <circle cx="249" cy="310" r="2.5" fill="#581c87"/>
+    
+    <!-- Blouse Body -->
+    <path d="M 120 40 L 180 40 L 210 60 L 200 280 L 100 280 L 90 60 Z" fill="#ffffff" stroke="#581c87" stroke-width="3.5" stroke-linejoin="round"/>
+    
+    <!-- Mandarin/Stand Collar -->
+    <path d="M 125 40 Q 150 48 175 40 L 175 58 Q 150 66 125 58 Z" fill="#f3e8ff" stroke="#581c87" stroke-width="2.5"/>
+    
+    <!-- Front Placket & Buttons -->
+    <line x1="150" y1="58" x2="150" y2="280" stroke="#7e22ce" stroke-width="2.5"/>
+    <circle cx="150" cy="90" r="3" fill="#581c87"/>
+    <circle cx="150" cy="130" r="3" fill="#581c87"/>
+    <circle cx="150" cy="170" r="3" fill="#581c87"/>
+    <circle cx="150" cy="210" r="3" fill="#581c87"/>
+    <circle cx="150" cy="250" r="3" fill="#581c87"/>
+    
+    <!-- Bust Darts -->
+    <line x1="105" y1="180" x2="135" y2="170" stroke="#9333ea" stroke-width="1.8"/>
+    <line x1="195" y1="180" x2="165" y2="170" stroke="#9333ea" stroke-width="1.8"/>
+  </g>
+  
+  <g transform="translate(400, 525)" text-anchor="middle">
+    <rect x="-180" y="-30" width="360" height="42" rx="21" fill="#581c87"/>
+    <text y="-4" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="bold">شومیز آستین پفی بیشاپ</text>
+  </g>
+</svg>

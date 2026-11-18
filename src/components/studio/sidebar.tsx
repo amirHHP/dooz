@@ -12,13 +12,12 @@ import { toPersianDigits } from '@/lib/format';
 import {
   FileDown,
   Layers,
-  Settings2,
-  Sparkles,
   Printer,
   FileCode,
   Sliders,
   CheckCircle2,
   Download,
+  Sparkles,
 } from 'lucide-react';
 
 export interface StudioSidebarProps {
@@ -35,6 +34,29 @@ export interface StudioSidebarProps {
   onExport: (format: 'A4_PDF' | 'A0_PDF' | 'SVG' | 'DXF') => Promise<void>;
   isExporting?: boolean;
 }
+
+const DEFAULT_FALLBACKS: Record<string, number> = {
+  sleeveLength: 58.0,
+  armCirc: 27.5,
+  wristCirc: 16.0,
+  bust: 88.0,
+  waist: 70.0,
+  hip: 94.0,
+  hipDepth: 20.0,
+  skirtLength: 65.0,
+  backLength: 41.0,
+  frontLength: 43.5,
+  acrossBack: 34.5,
+  acrossFront: 32.0,
+  neck: 36.0,
+  shoulder: 12.5,
+  bustHeight: 26.5,
+  bustSpan: 18.5,
+  trouserLength: 102.0,
+  crotchDepth: 26.0,
+  kneeWidth: 22.0,
+  hemWidth: 20.0,
+};
 
 export function StudioSidebar({
   blockType,
@@ -65,10 +87,38 @@ export function StudioSidebar({
     { id: 'GRLAWEIN', label: 'گرلاوین', desc: 'متد بومی‌سازی شده خیاطی با محاسبات سریع' },
   ];
 
-  const fitOptions: { id: FitPreference; label: string }[] = [
-    { id: 'TIGHT', label: 'جذب (Tight)' },
-    { id: 'CLASSIC', label: 'کلاسیک (Classic)' },
-    { id: 'LOOSE', label: 'آزاد (Loose)' },
+  const fitOptions: {
+    id: FitPreference;
+    label: string;
+    sublabel: string;
+    easeCm: string;
+    bars: number;
+    desc: string;
+  }[] = [
+    {
+      id: 'TIGHT',
+      label: 'جذب',
+      sublabel: 'بدن‌نما و چسبان',
+      easeCm: '۰ تا ۱.۵ cm',
+      bars: 1,
+      desc: 'حداقل آزادی برای پارچه‌های کشی یا لباس‌های اندامی',
+    },
+    {
+      id: 'CLASSIC',
+      label: 'کلاسیک',
+      sublabel: 'استاندارد اداری و رسمی',
+      easeCm: '۲ تا ۴ cm',
+      bars: 2,
+      desc: 'آزادی نرمال و متعادل برای پوشاک روزمره و مانتو',
+    },
+    {
+      id: 'LOOSE',
+      label: 'آزاد',
+      sublabel: 'راحت و گشاد',
+      easeCm: '۵ تا ۸ cm',
+      bars: 3,
+      desc: 'حداکثر آزادی برای لباس‌های راحت، پالتو و مدل‌های آزاد',
+    },
   ];
 
   // Relevant measurements to show depending on block type
@@ -97,9 +147,10 @@ export function StudioSidebar({
         ];
       case 'SLEEVE':
         return [
-          { key: 'armCirc', label: 'دور بازو', min: 18, max: 55 },
-          { key: 'sleeveLength', label: 'قد آستین', min: 40, max: 75 },
-          { key: 'wristCirc', label: 'دور مچ دست', min: 12, max: 26 },
+          { key: 'sleeveLength', label: 'قد آستین (سرشانه تا مچ)', min: 35, max: 80 },
+          { key: 'armCirc', label: 'دور بازو (برجسته‌ترین قسمت)', min: 18, max: 55 },
+          { key: 'wristCirc', label: 'دور مچ دست', min: 12, max: 32 },
+          { key: 'bust', label: 'دور سینه مبنای حلقه', min: 60, max: 160 },
         ];
       case 'TROUSER':
         return [
@@ -114,7 +165,72 @@ export function StudioSidebar({
   };
 
   return (
-    <div className="w-full lg:w-96 rounded-2xl border bg-card p-5 shadow-sm space-y-5">
+    <div className="w-full lg:w-96 rounded-2xl border bg-card p-5 shadow-sm space-y-4">
+      {/* Instant Fit Preference Selector (Always Visible) */}
+      <div className="bg-muted/40 border rounded-2xl p-3.5 space-y-2.5">
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+            <Sliders className="h-3.5 w-3.5 text-primary" />
+            <span>میزان آزادی و فیت الگو</span>
+          </label>
+          <span className="text-[11px] font-bold text-primary">
+            {fitPreference === 'TIGHT'
+              ? '۰ تا ۱.۵ cm (جذب)'
+              : fitPreference === 'CLASSIC'
+              ? '۲ تا ۴ cm (کلاسیک)'
+              : '۵ تا ۸ cm (آزاد)'}
+          </span>
+        </div>
+
+        {/* 3 Fit Options with Visual Ease Meters */}
+        <div className="grid grid-cols-3 gap-2">
+          {fitOptions.map((f) => {
+            const isSelected = fitPreference === f.id;
+            return (
+              <button
+                type="button"
+                key={f.id}
+                onClick={() => setFitPreference(f.id)}
+                className={`flex flex-col items-center justify-between p-2 rounded-xl border text-center transition-all ${
+                  isSelected
+                    ? 'bg-primary text-primary-foreground border-primary shadow-sm scale-[1.02]'
+                    : 'bg-background hover:bg-muted text-foreground'
+                }`}
+                title={f.desc}
+              >
+                <div className="flex items-center gap-1">
+                  <span className="text-xs font-black">{f.label}</span>
+                  {/* Ease Level Indicators */}
+                  <span className="flex items-center gap-0.5">
+                    {[1, 2, 3].map((dot) => (
+                      <span
+                        key={dot}
+                        className={`inline-block h-1.5 w-1.5 rounded-full ${
+                          dot <= f.bars
+                            ? isSelected
+                              ? 'bg-primary-foreground'
+                              : 'bg-primary'
+                            : isSelected
+                            ? 'bg-primary-foreground/30'
+                            : 'bg-muted-foreground/30'
+                        }`}
+                      />
+                    ))}
+                  </span>
+                </div>
+                <span
+                  className={`text-[10px] mt-1 font-mono ${
+                    isSelected ? 'text-primary-foreground/90' : 'text-muted-foreground'
+                  }`}
+                >
+                  {toPersianDigits(f.easeCm)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Tab Selectors */}
       <div className="grid grid-cols-4 gap-1 bg-muted/60 p-1 rounded-xl text-xs font-bold text-center">
         <button
@@ -202,26 +318,6 @@ export function StudioSidebar({
               ))}
             </div>
           </div>
-
-          <div className="space-y-2 pt-2">
-            <label className="text-xs font-bold text-foreground">آزادی و فیت (Fit Ease)</label>
-            <div className="grid grid-cols-3 gap-2">
-              {fitOptions.map((f) => (
-                <button
-                  type="button"
-                  key={f.id}
-                  onClick={() => setFitPreference(f.id)}
-                  className={`py-2 px-1 text-center rounded-xl border text-xs font-bold transition-all ${
-                    fitPreference === f.id
-                      ? 'bg-primary text-primary-foreground border-primary'
-                      : 'bg-background hover:bg-muted text-foreground'
-                  }`}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       )}
 
@@ -230,14 +326,15 @@ export function StudioSidebar({
         <div className="space-y-3">
           <div className="flex items-center justify-between border-b pb-2">
             <span className="text-xs font-bold text-foreground">اندازه‌های فعال (cm)</span>
-            <span className="text-[11px] text-muted-foreground">محاسبه آنی هندسه</span>
+            <span className="text-[11px] text-muted-foreground">محاسبه آنی هندسه الگو</span>
           </div>
 
           <div className="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
             {getRelevantKeys().map((item) => {
-              const val = measurements[item.key] ?? 70;
+              const fallback = DEFAULT_FALLBACKS[item.key] ?? 50;
+              const val = measurements[item.key] ?? fallback;
               return (
-                <div key={item.key} className="bg-muted/30 border rounded-xl p-2.5 space-y-1">
+                <div key={item.key} className="bg-muted/30 border rounded-xl p-2.5 space-y-1.5">
                   <div className="flex items-center justify-between text-xs font-semibold">
                     <span>{item.label}</span>
                     <span className="font-mono text-primary font-bold">{toPersianDigits(val)} cm</span>
@@ -246,7 +343,8 @@ export function StudioSidebar({
                     <button
                       type="button"
                       onClick={() => onMeasurementChange(item.key, Math.max(item.min, val - 0.5))}
-                      className="px-2 py-0.5 rounded-lg border bg-background hover:bg-muted font-bold text-xs"
+                      className="px-2.5 py-1 rounded-lg border bg-background hover:bg-muted font-bold text-xs"
+                      title="کاهش نیم سانتی‌متر"
                     >
                       -
                     </button>
@@ -257,12 +355,13 @@ export function StudioSidebar({
                       step={0.5}
                       value={val}
                       onChange={(e) => onMeasurementChange(item.key, parseFloat(e.target.value))}
-                      className="flex-1 accent-primary"
+                      className="flex-1 accent-primary cursor-pointer"
                     />
                     <button
                       type="button"
                       onClick={() => onMeasurementChange(item.key, Math.min(item.max, val + 0.5))}
-                      className="px-2 py-0.5 rounded-lg border bg-background hover:bg-muted font-bold text-xs"
+                      className="px-2.5 py-1 rounded-lg border bg-background hover:bg-muted font-bold text-xs"
+                      title="افزایش نیم سانتی‌متر"
                     >
                       +
                     </button>

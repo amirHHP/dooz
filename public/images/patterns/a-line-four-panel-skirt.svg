@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-skirt" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f0fdf4"/>
+      <stop offset="100%" stop-color="#dcfce7"/>
+    </linearGradient>
+    <pattern id="grid-skirt" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#16a34a" stroke-width="0.5" stroke-opacity="0.12"/>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#bg-skirt)"/>
+  <rect width="100%" height="100%" fill="url(#grid-skirt)"/>
+  
+  <rect x="30" y="30" width="740" height="540" rx="16" fill="none" stroke="#15803d" stroke-width="1.5" stroke-dasharray="6 4" stroke-opacity="0.3"/>
+  
+  <!-- A-Line Four-Panel Skirt -->
+  <g transform="translate(250, 75)">
+    <!-- Contour Waistband -->
+    <path d="M 60 40 Q 150 48 240 40 L 240 70 Q 150 78 60 70 Z" fill="#dcfce7" stroke="#14532d" stroke-width="3"/>
+    
+    <!-- Skirt Panels Outer Shape -->
+    <path d="M 60 70 Q 150 78 240 70 L 285 390 Q 150 410 15 390 Z" fill="#ffffff" stroke="#14532d" stroke-width="3.5" stroke-linejoin="round"/>
+    
+    <!-- 4-Panel Seam Lines -->
+    <!-- Center Front Seam -->
+    <line x1="150" y1="78" x2="150" y2="408" stroke="#15803d" stroke-width="2.5"/>
+    <!-- Left Princess Panel Seam -->
+    <path d="M 105 74 Q 100 200 80 398" fill="none" stroke="#16a34a" stroke-width="2" stroke-dasharray="6 2"/>
+    <!-- Right Princess Panel Seam -->
+    <path d="M 195 74 Q 200 200 220 398" fill="none" stroke="#16a34a" stroke-width="2" stroke-dasharray="6 2"/>
+    
+    <!-- Waist Darts -->
+    <line x1="105" y1="74" x2="105" y2="120" stroke="#14532d" stroke-width="1.8"/>
+    <line x1="195" y1="74" x2="195" y2="120" stroke="#14532d" stroke-width="1.8"/>
+    
+    <!-- Hem Stitches -->
+    <path d="M 20 380 Q 150 398 280 380" fill="none" stroke="#15803d" stroke-width="1.5" stroke-dasharray="4 2"/>
+  </g>
+  
+  <g transform="translate(400, 525)" text-anchor="middle">
+    <rect x="-180" y="-30" width="360" height="42" rx="21" fill="#14532d"/>
+    <text y="-4" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="bold">دامن فون کلاسیک چهار تکه</text>
+  </g>
+</svg>

@@ -14,7 +14,7 @@ import { StudioCanvas } from '@/components/studio/canvas';
 import { StudioTimelinePlayer } from '@/components/studio/timeline-player';
 import { StudioSidebar } from '@/components/studio/sidebar';
 import { toPersianDigits } from '@/lib/format';
-import { Scissors, UserCheck, ArrowRight, X, AlertCircle } from 'lucide-react';
+import { Scissors, ArrowRight, X, AlertCircle, Sliders, Layers } from 'lucide-react';
 
 // Default Size 38 benchmark measurements for instant zero-lag studio load
 const DEFAULT_STUDIO_MEASUREMENTS: Record<string, number> = {
@@ -64,6 +64,12 @@ function StudioContent() {
   const [showAll, setShowAll] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
+  // Reset timeline index when block changes
+  useEffect(() => {
+    setCurrentIndex(0);
+    setIsPlaying(false);
+  }, [blockType]);
+
   // Hydrate from Client CRM bridge if clientId is in query params
   useEffect(() => {
     if (!clientId) {
@@ -108,8 +114,8 @@ function StudioContent() {
           bustHeight: m.bustHeight ?? prev.bustHeight,
           bustSpan: m.bustDistance ?? prev.bustSpan,
           sleeveLength: m.sleeveLength ?? prev.sleeveLength,
-          armCirc: m.bicepCircumference ?? prev.armCirc,
-          wristCirc: m.wristCircumference ?? prev.wristCirc,
+          armCirc: m.bicepCircumference ?? m.armCirc ?? prev.armCirc,
+          wristCirc: m.wristCircumference ?? m.wristCirc ?? prev.wristCirc,
           trouserLength: m.trouserOutseam ?? prev.trouserLength,
           crotchDepth: m.crotchDepth ?? prev.crotchDepth,
           kneeWidth: m.kneeCircumference ? m.kneeCircumference / 1.7 : prev.kneeWidth,
@@ -230,7 +236,7 @@ function StudioContent() {
   };
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-6 space-y-6">
+    <div className="container mx-auto max-w-7xl px-4 py-6 space-y-5">
       {/* Active Client Bridge Banner */}
       {activeClient && (
         <div className="flex items-center justify-between rounded-2xl bg-primary/10 border border-primary/20 px-5 py-3.5 shadow-sm">
@@ -274,6 +280,65 @@ function StudioContent() {
           <span>{clientError}</span>
         </div>
       )}
+
+      {/* Top Instant Fit & Block Quick Selector Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-card border rounded-2xl p-3 shadow-sm">
+        {/* Quick Block Pills */}
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs font-bold text-muted-foreground pl-1">الگو:</span>
+          {(
+            [
+              { id: 'SKIRT', label: 'دامن' },
+              { id: 'BODICE', label: 'بالاتنه' },
+              { id: 'SLEEVE', label: 'آستین' },
+              { id: 'TROUSER', label: 'شلوار' },
+            ] as const
+          ).map((b) => (
+            <button
+              key={b.id}
+              type="button"
+              onClick={() => setBlockType(b.id)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                blockType === b.id
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'bg-muted/50 hover:bg-muted text-foreground'
+              }`}
+            >
+              {b.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Instant Fit Preference Selector */}
+        <div className="flex items-center gap-1.5 bg-muted/50 p-1 rounded-xl border">
+          <span className="text-xs font-bold text-muted-foreground px-2 flex items-center gap-1">
+            <Sliders className="h-3 w-3 text-primary" />
+            <span>تن‌خور:</span>
+          </span>
+          {(
+            [
+              { id: 'TIGHT', label: 'جذب', ease: '۰-۱.۵ cm' },
+              { id: 'CLASSIC', label: 'کلاسیک', ease: '۲-۴ cm' },
+              { id: 'LOOSE', label: 'آزاد', ease: '۵-۸ cm' },
+            ] as const
+          ).map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              onClick={() => setFitPreference(f.id)}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                fitPreference === f.id
+                  ? 'bg-background text-primary shadow-sm border'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+              title={`آزادی: ${f.ease}`}
+            >
+              <span>{f.label}</span>
+              <span className="text-[10px] font-mono text-muted-foreground">({toPersianDigits(f.ease)})</span>
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Main CAD Studio Layout */}
       <div className="flex flex-col lg:flex-row gap-6 items-start">

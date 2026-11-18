@@ -180,6 +180,96 @@ export function draftBasicSkirt(measurements, options = {}) {
     },
   ];
 
+  // Darts geometry
+  const dartTipYBack = hipDepthMm - 40;
+  const dartTipYFront = Math.min(hipDepthMm - 60, 100);
+  const frontDartCenterX = (backHipWidth * 10) + ((blockWidthMm - backHipWidth * 10) * 0.5) + frontDartShiftX * 10;
+  const frontDartHalfWidth = (Dfront * 10) / 2;
+
+  let backDartElements = [];
+  let backWaistPathPart = '';
+
+  if (backDartCount === 2) {
+    const w1 = backDartWidths[0] * 10;
+    const x1 = (backHipWidth * 10) * 0.35;
+    const y1 = hipDepthMm - 30;
+    const w2 = backDartWidths[1] * 10;
+    const x2 = (backHipWidth * 10) * 0.68;
+    const y2 = hipDepthMm - 60;
+
+    backDartElements = [
+      [new Point2D(x1 - w1 / 2, 0), new Point2D(x1, y1), new Point2D(x1 + w1 / 2, 0)],
+      [new Point2D(x2 - w2 / 2, 0), new Point2D(x2, y2), new Point2D(x2 + w2 / 2, 0)],
+    ];
+
+    backWaistPathPart = `L ${(x2 + w2 / 2).toFixed(1)} 0 L ${x2.toFixed(1)} ${y2.toFixed(1)} L ${(x2 - w2 / 2).toFixed(1)} 0 ` +
+      `L ${(x1 + w1 / 2).toFixed(1)} 0 L ${x1.toFixed(1)} ${y1.toFixed(1)} L ${(x1 - w1 / 2).toFixed(1)} 0 `;
+  } else {
+    const w1 = backDartWidths[0] * 10;
+    const x1 = (backHipWidth * 10) * 0.48;
+    const y1 = dartTipYBack;
+
+    backDartElements = [
+      [new Point2D(x1 - w1 / 2, 0), new Point2D(x1, y1), new Point2D(x1 + w1 / 2, 0)],
+    ];
+
+    backWaistPathPart = `L ${(x1 + w1 / 2).toFixed(1)} 0 L ${x1.toFixed(1)} ${y1.toFixed(1)} L ${(x1 - w1 / 2).toFixed(1)} 0 `;
+  }
+
+  const frontDartElements = [
+    new Point2D(frontDartCenterX - frontDartHalfWidth, cfWaistDeltaY * 10),
+    new Point2D(frontDartCenterX, dartTipYFront),
+    new Point2D(frontDartCenterX + frontDartHalfWidth, cfWaistDeltaY * 10),
+  ];
+
+  // Construction lines
+  const constructionLines = [
+    { from: new Point2D(0, 0), to: new Point2D(blockWidthMm, 0), label: 'خط کمر کادر اولیه', type: 'frame' },
+    { from: new Point2D(0, blockHeightMm), to: new Point2D(blockWidthMm, blockHeightMm), label: 'خط لبه دامن (پای دامن)', type: 'frame' },
+    { from: new Point2D(0, 0), to: new Point2D(0, blockHeightMm), label: 'خط راستای وسط پشت (CB)', type: 'frame' },
+    { from: new Point2D(blockWidthMm, 0), to: new Point2D(blockWidthMm, blockHeightMm), label: 'خط راستای وسط جلو (CF)', type: 'frame' },
+    { from: new Point2D(0, hipDepthMm), to: new Point2D(blockWidthMm, hipDepthMm), label: 'خط باسن بزرگ', type: 'guide' },
+    { from: new Point2D(backHipWidth * 10, 0), to: new Point2D(backHipWidth * 10, blockHeightMm), label: 'خط پهلو (محور تقسیم پشت و جلو)', type: 'axis' },
+  ];
+
+  // Contours (true cut outline SVG paths)
+  const backContour = [
+    `M ${points.cbWaist.x.toFixed(1)} ${points.cbWaist.y.toFixed(1)}`,
+    `L ${points.cbHip.x.toFixed(1)} ${points.cbHip.y.toFixed(1)}`,
+    `L ${points.cbHem.x.toFixed(1)} ${points.cbHem.y.toFixed(1)}`,
+    `L ${points.sideHem.x.toFixed(1)} ${points.sideHem.y.toFixed(1)}`,
+    `L ${points.sideHip.x.toFixed(1)} ${points.sideHip.y.toFixed(1)}`,
+    `C ${backHipCurve.c2.x.toFixed(1)} ${backHipCurve.c2.y.toFixed(1)} ${backHipCurve.c1.x.toFixed(1)} ${backHipCurve.c1.y.toFixed(1)} ${points.sideWaistBack.x.toFixed(1)} ${points.sideWaistBack.y.toFixed(1)}`,
+    backWaistPathPart + `L ${points.cbWaist.x.toFixed(1)} ${points.cbWaist.y.toFixed(1)}`,
+    'Z',
+  ].join(' ');
+
+  const frontHipC1X = points.sideWaistFront.x - 3 - hipCurveControlOffset;
+  const frontHipC1Y = points.sideWaistFront.y + 0.35 * (points.sideHip.y - points.sideWaistFront.y);
+  const frontHipC2X = points.sideHip.x - 2 - hipCurveControlOffset;
+  const frontHipC2Y = points.sideHip.y - 0.20 * (points.sideHip.y - points.sideWaistFront.y);
+
+  const frontContour = [
+    `M ${points.cfWaist.x.toFixed(1)} ${points.cfWaist.y.toFixed(1)}`,
+    `L ${(frontDartCenterX + frontDartHalfWidth).toFixed(1)} ${(cfWaistDeltaY * 10).toFixed(1)}`,
+    `L ${frontDartCenterX.toFixed(1)} ${dartTipYFront.toFixed(1)}`,
+    `L ${(frontDartCenterX - frontDartHalfWidth).toFixed(1)} ${(cfWaistDeltaY * 10).toFixed(1)}`,
+    `L ${points.sideWaistFront.x.toFixed(1)} ${points.sideWaistFront.y.toFixed(1)}`,
+    `C ${frontHipC1X.toFixed(1)} ${frontHipC1Y.toFixed(1)} ${frontHipC2X.toFixed(1)} ${frontHipC2Y.toFixed(1)} ${points.sideHip.x.toFixed(1)} ${points.sideHip.y.toFixed(1)}`,
+    `L ${points.sideHem.x.toFixed(1)} ${points.sideHem.y.toFixed(1)}`,
+    `L ${points.cfHem.x.toFixed(1)} ${points.cfHem.y.toFixed(1)}`,
+    `L ${points.cfHip.x.toFixed(1)} ${points.cfHip.y.toFixed(1)}`,
+    `L ${points.cfWaist.x.toFixed(1)} ${points.cfWaist.y.toFixed(1)}`,
+    'Z',
+  ].join(' ');
+
+  const contours = [backContour, frontContour];
+  const darts = [...backDartElements, frontDartElements];
+  const grainlines = [
+    { from: new Point2D((backHipWidth * 10) / 2, hipDepthMm - 40), to: new Point2D((backHipWidth * 10) / 2, blockHeightMm - 60) },
+    { from: new Point2D((backHipWidth * 10 + blockWidthMm) / 2, hipDepthMm - 40), to: new Point2D((backHipWidth * 10 + blockWidthMm) / 2, blockHeightMm - 60) },
+  ];
+
   return {
     blockType: 'SKIRT',
     method,
@@ -200,6 +290,10 @@ export function draftBasicSkirt(measurements, options = {}) {
     frontSideSeamLength,
     steps,
     boundingBox: { minX: 0, minY: -waistRise * 10, width: blockWidthMm, height: blockHeightMm + 20 },
+    constructionLines,
+    contours,
+    grainlines,
+    darts,
   };
 }
 
@@ -333,6 +427,92 @@ export function draftBasicBodice(measurements, options = {}) {
     },
   ];
 
+  // Bodice construction lines & contours
+  const underarmYMm = (Da + underarmDrop) * 10;
+  const waistYMm = backLength * 10;
+  const frontWaistYMm = (backLength + frontLengthOffset) * 10;
+  const blockWidthMm = Wblock * 10;
+
+  // Back dart & waist points
+  const backSideWaistX = (Rb + Ad / 2 - sideSeamSuppression / 2) * 10;
+  const backDartCenterX = Rb * 5;
+  const backDartApexY = underarmYMm + 20;
+  const backDartHalfW = (backDartWidth * 10) / 2;
+
+  // Front dart & waist points
+  const frontSideWaistX = (Rb + Ad / 2 + sideSeamSuppression / 2) * 10;
+  const frontDartCenterX = points.bustApex.x;
+  const frontDartHalfW = (frontDartWidth * 10) / 2;
+  const frontDartApexY = points.bustApex.y + 25;
+
+  // Front neck & shoulder points
+  const frontNeckX = (Wblock - Hw) * 10;
+  const frontNeckY = -15;
+  const frontNeckPitX = blockWidthMm;
+  const frontNeckPitY = (Hw + 0.5) * 10;
+  const frontShoulderTipX = (Rb + Ad + 0.5) * 10;
+  const frontShoulderTipY = (Da / 3 + shoulderTipDrop + 1.5) * 10;
+
+  // Construction lines
+  const constructionLines = [
+    { from: new Point2D(0, 0), to: new Point2D(blockWidthMm, 0), label: 'خط گردن / کادر بالایی', type: 'frame' },
+    { from: new Point2D(0, waistYMm), to: new Point2D(blockWidthMm, waistYMm), label: 'خط کمر کادر اولیه', type: 'frame' },
+    { from: new Point2D(0, 0), to: new Point2D(0, waistYMm), label: 'خط مرکزی پشت (CB)', type: 'frame' },
+    { from: new Point2D(blockWidthMm, 0), to: new Point2D(blockWidthMm, frontWaistYMm), label: 'خط مرکزی جلو (CF)', type: 'frame' },
+    { from: new Point2D(0, underarmYMm), to: new Point2D(blockWidthMm, underarmYMm), label: 'خط کف حلقه و سینه', type: 'guide' },
+    { from: new Point2D(Rb * 10, bustHeight * 10), to: new Point2D(blockWidthMm, bustHeight * 10), label: 'خط بلندی سینه', type: 'guide' },
+    { from: new Point2D(Rb * 10, 0), to: new Point2D(Rb * 10, underarmYMm), label: 'خط راهنمای کارور پشت', type: 'guide' },
+    { from: new Point2D((Rb + Ad) * 10, 0), to: new Point2D((Rb + Ad) * 10, underarmYMm), label: 'خط راهنمای کارور جلو', type: 'guide' },
+    { from: new Point2D((Rb + Ad / 2) * 10, underarmYMm), to: new Point2D((Rb + Ad / 2) * 10, waistYMm), label: 'خط عمود پهلو', type: 'axis' },
+    { from: new Point2D(frontDartCenterX, points.bustApex.y), to: new Point2D(frontDartCenterX, frontWaistYMm), label: 'محور ساسون زیر سینه', type: 'axis' },
+    { from: new Point2D(backDartCenterX, underarmYMm), to: new Point2D(backDartCenterX, waistYMm), label: 'محور ساسون پشت', type: 'guide' },
+  ];
+
+  // Contours (true cut outline SVG paths for Back and Front bodice pieces)
+  const backContour = [
+    `M ${points.nape.x.toFixed(1)} ${points.nape.y.toFixed(1)}`,
+    `Q ${(Hw * 5).toFixed(1)} 0, ${points.backNeck.x.toFixed(1)} ${points.backNeck.y.toFixed(1)}`,
+    `L ${points.backShoulderTip.x.toFixed(1)} ${points.backShoulderTip.y.toFixed(1)}`,
+    `C ${(Rb * 10 + 2).toFixed(1)} ${(points.backShoulderTip.y + 15).toFixed(1)}, ${(Rb * 10).toFixed(1)} ${(points.sideSeamUnderarm.y - 15).toFixed(1)}, ${points.sideSeamUnderarm.x.toFixed(1)} ${points.sideSeamUnderarm.y.toFixed(1)}`,
+    `L ${backSideWaistX.toFixed(1)} ${waistYMm.toFixed(1)}`,
+    `L ${(backDartCenterX + backDartHalfW).toFixed(1)} ${waistYMm.toFixed(1)}`,
+    `L ${backDartCenterX.toFixed(1)} ${backDartApexY.toFixed(1)}`,
+    `L ${(backDartCenterX - backDartHalfW).toFixed(1)} ${waistYMm.toFixed(1)}`,
+    `L ${points.cbWaist.x.toFixed(1)} ${points.cbWaist.y.toFixed(1)}`,
+    `L ${points.nape.x.toFixed(1)} ${points.nape.y.toFixed(1)}`,
+    'Z',
+  ].join(' ');
+
+  const frontContour = [
+    `M ${frontNeckPitX.toFixed(1)} ${frontNeckPitY.toFixed(1)}`,
+    `L ${points.cfWaist.x.toFixed(1)} ${points.cfWaist.y.toFixed(1)}`,
+    `L ${(frontDartCenterX + frontDartHalfW).toFixed(1)} ${points.cfWaist.y.toFixed(1)}`,
+    `L ${frontDartCenterX.toFixed(1)} ${frontDartApexY.toFixed(1)}`,
+    `L ${(frontDartCenterX - frontDartHalfW).toFixed(1)} ${points.cfWaist.y.toFixed(1)}`,
+    `L ${frontSideWaistX.toFixed(1)} ${waistYMm.toFixed(1)}`,
+    `L ${points.sideSeamUnderarm.x.toFixed(1)} ${points.sideSeamUnderarm.y.toFixed(1)}`,
+    `C ${(points.sideSeamUnderarm.x + 10).toFixed(1)} ${(points.sideSeamUnderarm.y - 5).toFixed(1)}, ${((Rb + Ad) * 10).toFixed(1)} ${(points.sideSeamUnderarm.y - 20).toFixed(1)}, ${frontShoulderTipX.toFixed(1)} ${frontShoulderTipY.toFixed(1)}`,
+    `L ${(frontShoulderTipX + 15).toFixed(1)} ${(frontShoulderTipY - 5).toFixed(1)}`,
+    `L ${points.bustApex.x.toFixed(1)} ${points.bustApex.y.toFixed(1)}`,
+    `L ${(frontNeckX - 10).toFixed(1)} ${(frontNeckY + 5).toFixed(1)}`,
+    `L ${frontNeckX.toFixed(1)} ${frontNeckY.toFixed(1)}`,
+    `Q ${blockWidthMm.toFixed(1)} ${frontNeckY.toFixed(1)}, ${frontNeckPitX.toFixed(1)} ${frontNeckPitY.toFixed(1)}`,
+    'Z',
+  ].join(' ');
+
+  const contours = [backContour, frontContour];
+
+  const darts = [
+    [new Point2D(backDartCenterX - backDartHalfW, waistYMm), new Point2D(backDartCenterX, backDartApexY), new Point2D(backDartCenterX + backDartHalfW, waistYMm)],
+    [new Point2D(frontDartCenterX - frontDartHalfW, points.cfWaist.y), new Point2D(frontDartCenterX, frontDartApexY), new Point2D(frontDartCenterX + frontDartHalfW, points.cfWaist.y)],
+    [new Point2D(frontShoulderTipX + 15, frontShoulderTipY - 5), points.bustApex, new Point2D(frontNeckX - 10, frontNeckY + 5)],
+  ];
+
+  const grainlines = [
+    { from: new Point2D(Rb * 5, 50), to: new Point2D(Rb * 5, waistYMm - 30) },
+    { from: new Point2D(frontDartCenterX, points.bustApex.y + 30), to: new Point2D(frontDartCenterX, frontWaistYMm - 30) },
+  ];
+
   return {
     blockType: 'BODICE',
     method,
@@ -352,6 +532,11 @@ export function draftBasicBodice(measurements, options = {}) {
     totalArmholePerimeter,
     points,
     steps,
+    boundingBox: { minX: 0, minY: -20, width: Wblock * 10, height: (backLength + frontLengthOffset) * 10 + 20 },
+    constructionLines,
+    contours,
+    grainlines,
+    darts,
   };
 }
 
@@ -385,14 +570,15 @@ export function draftBasicSleeve(bodiceResult, sleeveParams = {}) {
   const BW = armCirc + bicepEase;
   const capHeightMm = CapHeight * 10;
   const bicepWidthMm = BW * 10;
-  const wristWidthMm = (wristCirc + 4.0) * 10;
+  const wristEase = 4.0;
+  const wristWidthMm = (wristCirc + wristEase) * 10;
   const sleeveLengthMm = sleeveLength * 10;
 
   // Crown apex coordinate
   const xApex = 0.52 * bicepWidthMm;
-  const crownApex = new Point2D(xApex, 0);
-  const uBack = new Point2D(0, capHeightMm);
-  const uFront = new Point2D(bicepWidthMm, capHeightMm);
+  const crownApex = new Point2D(xApex, 0, 'قله تاج آستین (نقطه ۱)');
+  const uBack = new Point2D(0, capHeightMm, 'کف حلقه پشت (نقطه ۴)');
+  const uFront = new Point2D(bicepWidthMm, capHeightMm, 'کف حلقه جلو (نقطه ۵)');
 
   // Back cap curve (concave scoop + convex crown)
   const mBack = new Point2D(0.22 * bicepWidthMm, 0.40 * capHeightMm);
@@ -428,20 +614,199 @@ export function draftBasicSleeve(bodiceResult, sleeveParams = {}) {
   const LcapCm = LcapMm / 10;
   const capEaseCm = LcapCm - AHtot;
 
+  // 1. Initial Rectangular Drafting Frame (کادر مستطیل اولیه)
+  const frameTopLeft = new Point2D(0, 0, 'گوشه کادر بالا چپ');
+  const frameTopRight = new Point2D(bicepWidthMm, 0, 'گوشه کادر بالا راست');
+  const frameBottomLeft = new Point2D(0, sleeveLengthMm, 'گوشه کادر پایین چپ');
+  const frameBottomRight = new Point2D(bicepWidthMm, sleeveLengthMm, 'گوشه کادر پایین راست');
+
+  // 2. Wrist and Center Line (خط مچ و محور مرکزی)
+  const taperEach = Math.max(0, (bicepWidthMm - wristWidthMm) / 2);
+  const wristBack = new Point2D(taperEach, sleeveLengthMm, 'مچ پشت');
+  const wristFront = new Point2D(bicepWidthMm - taperEach, sleeveLengthMm, 'مچ جلو');
+  const centerWrist = new Point2D(xApex, sleeveLengthMm, 'مرکز مچ (نقطه ۲ و ۷)');
+  const centerBicep = new Point2D(xApex, capHeightMm, 'تقاطع کف حلقه و محور مرکزی (نقطه ۳)');
+
+  // 3. Elbow Line (خط آرنج - نصف فاصله کف حلقه تا مچ)
+  const elbowYMm = capHeightMm + (sleeveLengthMm - capHeightMm) * 0.5;
+  const elbowBackX = taperEach * 0.5;
+  const elbowFrontX = bicepWidthMm - taperEach * 0.5;
+  const elbowBack = new Point2D(elbowBackX, elbowYMm, 'آرنج پشت');
+  const elbowFront = new Point2D(elbowFrontX, elbowYMm, 'آرنج جلو');
+  const elbowCenter = new Point2D(xApex, elbowYMm, 'مرکز آرنج (نقطه ۶)');
+
+  // 4. Crown Guide Triangle Division Points (نقاط کمکی تقسیمات مثلث راهنما)
+  const dxBack = crownApex.x - uBack.x;
+  const dyBack = crownApex.y - uBack.y;
+  const lenBack = Math.hypot(dxBack, dyBack);
+  const uxBack = lenBack > 0 ? dxBack / lenBack : 0;
+  const uyBack = lenBack > 0 ? dyBack / lenBack : 0;
+  const nOutBack = new Point2D(uyBack, -uxBack);
+
+  const point8 = new Point2D(uBack.x + 0.25 * dxBack, uBack.y + 0.25 * dyBack, 'نقطه ۸ (۱/۴ هلال پشت)');
+  const point9 = new Point2D(uBack.x + 0.50 * dxBack, uBack.y + 0.50 * dyBack, 'نقطه ۹ (وسط شیب پشت)');
+  const point10 = new Point2D(uBack.x + 0.75 * dxBack, uBack.y + 0.75 * dyBack, 'نقطه ۱۰ (۳/۴ هلال پشت)');
+
+  const dxFront = uFront.x - crownApex.x;
+  const dyFront = uFront.y - crownApex.y;
+  const lenFront = Math.hypot(dxFront, dyFront);
+  const uxFront = lenFront > 0 ? dxFront / lenFront : 0;
+  const uyFront = lenFront > 0 ? dyFront / lenFront : 0;
+  const nOutFront = new Point2D(uyFront, -uxFront);
+
+  const point11 = new Point2D(crownApex.x + 0.25 * dxFront, crownApex.y + 0.25 * dyFront, 'نقطه ۱۱ (۱/۴ هلال جلو)');
+  const point12 = new Point2D(crownApex.x + 0.50 * dxFront, crownApex.y + 0.50 * dyFront, 'نقطه ۱۲ (وسط شیب جلو)');
+  const point13 = new Point2D(crownApex.x + 0.75 * dxFront, crownApex.y + 0.75 * dyFront, 'نقطه ۱۳ (۳/۴ هلال جلو)');
+
+  const point19 = new Point2D(point8.x - 10 * nOutBack.x, point8.y - 10 * nOutBack.y, 'نقطه ۱۹ (گودی هلال پشت)');
+  const point20 = new Point2D(point10.x + 18 * nOutBack.x, point10.y + 18 * nOutBack.y, 'نقطه ۲۰ (برجستگی تاج پشت)');
+  const point22 = new Point2D(point11.x + 18 * nOutFront.x, point11.y + 18 * nOutFront.y, 'نقطه ۲۲ (برجستگی تاج جلو)');
+  const point23 = new Point2D(point13.x - 15 * nOutFront.x, point13.y - 15 * nOutFront.y, 'نقطه ۲۳ (گودی عمیق حلقه جلو)');
+
+  // 5. Wrist Vent / Slit Markings (چاک آستین)
+  const backWristSpan = centerWrist.x - wristBack.x;
+  const slitX = wristBack.x + 0.25 * backWristSpan;
+  const slitLengthMm = 80.0;
+  const slitBottom = new Point2D(slitX, sleeveLengthMm, 'پایین چاک آستین');
+  const slitTop = new Point2D(slitX, sleeveLengthMm - slitLengthMm, 'بالای چاک آستین');
+
+  const constructionLines = [
+    { from: frameTopLeft, to: frameTopRight, label: 'کادر مستطیل اولیه (لبه بالا)', type: 'frame' },
+    { from: frameTopRight, to: frameBottomRight, label: 'کادر مستطیل اولیه (راست)', type: 'frame' },
+    { from: frameBottomRight, to: frameBottomLeft, label: 'کادر مستطیل اولیه (لبه مچ)', type: 'frame' },
+    { from: frameBottomLeft, to: frameTopLeft, label: 'کادر مستطیل اولیه (چپ)', type: 'frame' },
+    { from: crownApex, to: centerWrist, label: 'محور مرکزی و راستای پارچه', type: 'axis' },
+    { from: uBack, to: uFront, label: 'خط کف حلقه (عرض بازو)', type: 'guide' },
+    { from: elbowBack, to: elbowFront, label: 'خط آرنج', type: 'guide' },
+    { from: wristBack, to: wristFront, label: 'خط مچ', type: 'guide' },
+    { from: uBack, to: crownApex, label: 'راهنمای تاج پشت (شیب پشت)', type: 'guide' },
+    { from: crownApex, to: uFront, label: 'راهنمای تاج جلو (شیب جلو)', type: 'guide' },
+    { from: point8, to: point19, label: 'عمود گودی پشت (نقطه ۸ به ۱۹)', type: 'guide' },
+    { from: point10, to: point20, label: 'عمود برجستگی پشت (نقطه ۱۰ به ۲۰)', type: 'guide' },
+    { from: point11, to: point22, label: 'عمود برجستگی جلو (نقطه ۱۱ به ۲۲)', type: 'guide' },
+    { from: point13, to: point23, label: 'عمود گودی جلو (نقطه ۱۳ به ۲۳)', type: 'guide' },
+    { from: uBack, to: wristBack, label: 'درز زیر دست پشت', type: 'guide' },
+    { from: uFront, to: wristFront, label: 'درز زیر دست جلو', type: 'guide' },
+    { from: slitBottom, to: slitTop, label: 'خط چاک آستین', type: 'guide' },
+  ];
+
+  const sleeveContour = [
+    `M ${uBack.x.toFixed(2)},${uBack.y.toFixed(2)}`,
+    `C ${backScoop.c1.x.toFixed(2)},${backScoop.c1.y.toFixed(2)} ${backScoop.c2.x.toFixed(2)},${backScoop.c2.y.toFixed(2)} ${backScoop.p3.x.toFixed(2)},${backScoop.p3.y.toFixed(2)}`,
+    `C ${backCrown.c1.x.toFixed(2)},${backCrown.c1.y.toFixed(2)} ${backCrown.c2.x.toFixed(2)},${backCrown.c2.y.toFixed(2)} ${crownApex.x.toFixed(2)},${crownApex.y.toFixed(2)}`,
+    `C ${frontCrown.c1.x.toFixed(2)},${frontCrown.c1.y.toFixed(2)} ${frontCrown.c2.x.toFixed(2)},${frontCrown.c2.y.toFixed(2)} ${frontCrown.p3.x.toFixed(2)},${frontCrown.p3.y.toFixed(2)}`,
+    `C ${frontScoop.c1.x.toFixed(2)},${frontScoop.c1.y.toFixed(2)} ${frontScoop.c2.x.toFixed(2)},${frontScoop.c2.y.toFixed(2)} ${uFront.x.toFixed(2)},${uFront.y.toFixed(2)}`,
+    `L ${wristFront.x.toFixed(2)},${wristFront.y.toFixed(2)}`,
+    `L ${wristBack.x.toFixed(2)},${wristBack.y.toFixed(2)}`,
+    `Z`,
+  ].join(' ');
+  const contours = [sleeveContour];
+
+  const points = {
+    crownApex,
+    uBack,
+    uFront,
+    centerWrist,
+    wristBack,
+    wristFront,
+    elbowBack,
+    elbowFront,
+    elbowCenter,
+    frameTopLeft,
+    frameTopRight,
+    frameBottomLeft,
+    frameBottomRight,
+    point1: crownApex,
+    point2: centerWrist,
+    point3: centerBicep,
+    point4: uBack,
+    point5: uFront,
+    point6: elbowCenter,
+    point7: centerWrist,
+    point8,
+    point9,
+    point10,
+    point11,
+    point12,
+    point13,
+    point19,
+    point20,
+    point22,
+    point23,
+    pt1: crownApex,
+    pt2: centerWrist,
+    pt3: centerBicep,
+    pt4: uBack,
+    pt5: uFront,
+    pt6: elbowCenter,
+    pt7: centerWrist,
+    pt8: point8,
+    pt9: point9,
+    pt10: point10,
+    pt11: point11,
+    pt12: point12,
+    pt13: point13,
+    pt19: point19,
+    pt20: point20,
+    pt22: point22,
+    pt23: point23,
+    slitBottom,
+    slitTop,
+  };
+
   const steps = [
     {
       stepIndex: 0,
-      titleFa: 'محاسبه بلندی تاج و خط کف حلقه آستین',
-      instructionFa: `بلندی تاج آستین برابر ${(CapHeight).toFixed(1)} سانتی‌متر و خط دور بازو ${(BW).toFixed(1)} سانتی‌متر تعیین شد.`,
-      calculatedValues: { 'بلندی تاج': `${(CapHeight).toFixed(1)} cm`, 'عرض بازو': `${(BW).toFixed(1)} cm` },
-      elements: ['crownApex', 'uBack', 'uFront'],
+      titleFa: 'کادر مستطیل اولیه و خطوط مبنا',
+      instructionFa: `کادر مستطیلی به عرض کف حلقه ${(BW).toFixed(1)} سانتی‌متر و ارتفاع قد آستین ${(sleeveLength).toFixed(1)} سانتی‌متر رسم کنید. خط مچ در انتهای کادر و خط کف حلقه در فاصله ${(CapHeight).toFixed(1)} سانتی‌متری از لبه بالا قرار دارد.`,
+      calculatedValues: {
+        'قد آستین': `${sleeveLength.toFixed(1)} cm`,
+        'عرض کف حلقه (دور بازو)': `${BW.toFixed(1)} cm`,
+        'بلندی تاج آستین': `${CapHeight.toFixed(1)} cm`,
+      },
+      elements: ['frameTopLeft', 'frameTopRight', 'frameBottomLeft', 'frameBottomRight', 'uBack', 'uFront'],
     },
     {
       stepIndex: 1,
-      titleFa: 'رسم منحنی تاج آستین و تطابق خرد',
-      instructionFa: `طول منحنی تاج ${(LcapCm).toFixed(1)} سانتی‌متر و میزان خرد تاج ${(capEaseCm).toFixed(1)} سانتی‌متر است.`,
-      calculatedValues: { 'محیط حلقه تنه': `${(AHtot).toFixed(1)} cm`, 'خرد تاج آستین': `${(capEaseCm).toFixed(1)} cm` },
-      elements: ['backCapCurve', 'frontCapCurve'],
+      titleFa: 'محور مرکزی و خط آرنج',
+      instructionFa: `خط تعادل و راستای پارچه از قله تاج آستین به مچ عمود می‌شود. خط آرنج در فاصله ${(elbowYMm / 10).toFixed(1)} سانتی‌متر (نصف فاصله کف حلقه تا مچ) به موازات خط مچ رسم می‌گردد.`,
+      calculatedValues: {
+        'موقعیت محور مرکزی': `${(xApex / 10).toFixed(1)} cm`,
+        'فاصله تا خط آرنج': `${(elbowYMm / 10).toFixed(1)} cm`,
+      },
+      elements: ['crownApex', 'centerWrist', 'elbowBack', 'elbowFront', 'elbowCenter'],
+    },
+    {
+      stepIndex: 2,
+      titleFa: 'مثلث راهنمای تاج و نقاط تقسیم‌بندی',
+      instructionFa: `خطوط شیب تاج از کف حلقه پشت و جلو به قله تاج وصل شده و به چهار قسمت مساوی تقسیم می‌شوند (نقاط ۸، ۹، ۱۰ در پشت و ۱۱، ۱۲، ۱۳ در جلو). سپس خطوط عمود راهنمای تحدب و تقعر (نقاط ۱۹، ۲۰، ۲۲، ۲۳) رسم می‌شوند.`,
+      calculatedValues: {
+        'نقاط کمکی پشت': '۸، ۹، ۱۰',
+        'نقاط کمکی جلو': '۱۱، ۱۲، ۱۳',
+        'نقاط کنترل انحنا': '۱۹، ۲۰، ۲۲، ۲۳',
+      },
+      elements: ['point8', 'point9', 'point10', 'point11', 'point12', 'point13', 'point19', 'point20', 'point22', 'point23'],
+    },
+    {
+      stepIndex: 3,
+      titleFa: 'رسم منحنی‌های تاج آستین و تطابق خرد',
+      instructionFa: `منحنی‌های هلال تاج آستین با عبور نرم از نقاط کمکی رسم می‌شوند. طول کل منحنی تاج ${(LcapCm).toFixed(1)} سانتی‌متر است که با احتساب محیط حلقه ${(AHtot).toFixed(1)} سانتی‌متر، مقدار خرد مجاز ${(capEaseCm).toFixed(1)} سانتی‌متر را تامین می‌کند.`,
+      calculatedValues: {
+        'محیط حلقه تنه': `${AHtot.toFixed(1)} cm`,
+        'طول منحنی تاج': `${LcapCm.toFixed(1)} cm`,
+        'خرد تاج آستین': `${capEaseCm.toFixed(1)} cm`,
+      },
+      elements: ['backScoop', 'backCrown', 'frontCrown', 'frontScoop', 'crownApex'],
+    },
+    {
+      stepIndex: 4,
+      titleFa: 'خطوط درز زیر دست، مچ و چاک آستین',
+      instructionFa: `خطوط درز زیر دست با اتصال کف حلقه به مچ رسم می‌شوند. پهنای دور مچ ${(wristWidthMm / 10).toFixed(1)} سانتی‌متر است و چاک آستین در یک‌چهارم سمت پشت مچ به طول ${(slitLengthMm / 10).toFixed(1)} سانتی‌متر مشخص می‌گردد. کانتور نهایی برش بسته آستین شکل می‌گیرد.`,
+      calculatedValues: {
+        'عرض مچ با آزادی': `${(wristWidthMm / 10).toFixed(1)} cm`,
+        'طول چاک آستین': `${(slitLengthMm / 10).toFixed(1)} cm`,
+      },
+      elements: ['wristBack', 'wristFront', 'slitBottom', 'slitTop', 'sleeveContour'],
     },
   ];
 
@@ -453,12 +818,15 @@ export function draftBasicSleeve(bodiceResult, sleeveParams = {}) {
     AHtot,
     LcapCm,
     capEaseCm,
-    points: { crownApex, uBack, uFront },
+    points,
     backScoop,
     backCrown,
     frontCrown,
     frontScoop,
+    constructionLines,
+    contours,
     steps,
+    boundingBox: { minX: 0, minY: 0, width: bicepWidthMm, height: sleeveLengthMm },
   };
 }
 
@@ -542,6 +910,79 @@ export function draftBasicTrouser(measurements, options = {}) {
     },
   ];
 
+  const yHipMm = Math.max(0, (crotchDepth - 8.5) * 10);
+  const xCF = ExtFront * 10;
+  const xSideHip = (ExtFront + WfrontHip) * 10;
+  const frontWaistSideX = xCreaseMm + ((WfrontHip - ExtFront) / 2 + 1) * 10;
+
+  // Back trouser reference points
+  const backWaistCBX = xCreaseMm - 20;
+  const backWaistCBY = -25;
+  const backWaistSideX = xCreaseMm + ((WfrontHip - ExtFront) / 2 + 3.5) * 10;
+  const backWaistSideY = 0;
+  const backHipSideX = (ExtFront + WfrontHip + 2.0) * 10;
+  const backHemLeftX = xCreaseMm - (hemWidth / 2 + 1.0) * 10;
+  const backHemRightX = xCreaseMm + (hemWidth / 2 + 1.0) * 10;
+
+  // Initial rectangular frame width and bounds
+  const frameWidthMm = (ExtFront + WfrontHip) * 10;
+
+  // Construction lines
+  const constructionLines = [
+    { from: new Point2D(0, 0), to: new Point2D(frameWidthMm, 0), label: 'خط کمر کادر اولیه', type: 'frame' },
+    { from: new Point2D(0, yHemMm), to: new Point2D(frameWidthMm, yHemMm), label: 'خط لبه دمپا کادر', type: 'frame' },
+    { from: new Point2D(0, 0), to: new Point2D(0, yHemMm), label: 'خط مبنای پیش (راستای فاق)', type: 'frame' },
+    { from: new Point2D(frameWidthMm, 0), to: new Point2D(frameWidthMm, yHemMm), label: 'خط مبنای پهلو', type: 'frame' },
+    { from: new Point2D(-ExtBack * 10, yHipMm), to: new Point2D(backHipSideX, yHipMm), label: 'خط باسن', type: 'guide' },
+    { from: new Point2D(-ExtBack * 10, yCrotchMm), to: new Point2D(backHipSideX, yCrotchMm), label: 'خط فاق', type: 'guide' },
+    { from: new Point2D(xCreaseMm - (kneeWidth / 2 + 2) * 10, yKneeMm), to: new Point2D(xCreaseMm + (kneeWidth / 2 + 2) * 10, yKneeMm), label: 'خط زانو', type: 'guide' },
+    { from: new Point2D(xCreaseMm - (hemWidth / 2 + 2) * 10, yHemMm), to: new Point2D(xCreaseMm + (hemWidth / 2 + 2) * 10, yHemMm), label: 'خط لبه دمپا', type: 'guide' },
+    { from: new Point2D(xCreaseMm, 0), to: new Point2D(xCreaseMm, yHemMm), label: 'خط اتو و تعادل (راستای پارچه)', type: 'axis' },
+    { from: new Point2D(xCF, 0), to: new Point2D(xCF, yCrotchMm), label: 'خط عمود فاق پیش', type: 'guide' },
+  ];
+
+  // Contours (true cut outline SVG paths for Front and Back trouser pieces)
+  const frontContour = [
+    `M ${xCF.toFixed(1)} 0`,
+    `L ${frontWaistSideX.toFixed(1)} 0`,
+    `Q ${(xSideHip + 2).toFixed(1)} ${(yHipMm / 2).toFixed(1)}, ${xSideHip.toFixed(1)} ${yHipMm.toFixed(1)}`,
+    `L ${xSideHip.toFixed(1)} ${yCrotchMm.toFixed(1)}`,
+    `L ${points.frontKneeRight.x.toFixed(1)} ${points.frontKneeRight.y.toFixed(1)}`,
+    `L ${points.frontHemRight.x.toFixed(1)} ${points.frontHemRight.y.toFixed(1)}`,
+    `L ${points.frontHemLeft.x.toFixed(1)} ${points.frontHemLeft.y.toFixed(1)}`,
+    `L ${points.frontKneeLeft.x.toFixed(1)} ${points.frontKneeLeft.y.toFixed(1)}`,
+    `Q ${(points.frontKneeLeft.x - 4).toFixed(1)} ${(yCrotchMm + (yKneeMm - yCrotchMm) * 0.45).toFixed(1)}, ${points.frontCrotchTip.x.toFixed(1)} ${points.frontCrotchTip.y.toFixed(1)}`,
+    `Q ${(xCF * 0.35).toFixed(1)} ${yCrotchMm.toFixed(1)}, ${xCF.toFixed(1)} ${yHipMm.toFixed(1)}`,
+    `L ${xCF.toFixed(1)} 0`,
+    'Z',
+  ].join(' ');
+
+  const backContour = [
+    `M ${backWaistCBX.toFixed(1)} ${backWaistCBY.toFixed(1)}`,
+    `L ${backWaistSideX.toFixed(1)} ${backWaistSideY.toFixed(1)}`,
+    `Q ${(backHipSideX + 2).toFixed(1)} ${(yHipMm / 2).toFixed(1)}, ${backHipSideX.toFixed(1)} ${yHipMm.toFixed(1)}`,
+    `L ${backHipSideX.toFixed(1)} ${yCrotchMm.toFixed(1)}`,
+    `L ${points.backKneeRight.x.toFixed(1)} ${points.backKneeRight.y.toFixed(1)}`,
+    `L ${backHemRightX.toFixed(1)} ${yHemMm.toFixed(1)}`,
+    `L ${backHemLeftX.toFixed(1)} ${yHemMm.toFixed(1)}`,
+    `L ${points.backKneeLeft.x.toFixed(1)} ${points.backKneeLeft.y.toFixed(1)}`,
+    `Q ${(points.backKneeLeft.x - 6).toFixed(1)} ${(yCrotchMm + (yKneeMm - yCrotchMm) * 0.45).toFixed(1)}, ${points.backCrotchTip.x.toFixed(1)} ${points.backCrotchTip.y.toFixed(1)}`,
+    `C ${(points.backCrotchTip.x + 10).toFixed(1)} ${(yCrotchMm - 10).toFixed(1)}, ${(xCF - 10).toFixed(1)} ${(yHipMm + 10).toFixed(1)}, ${backWaistCBX.toFixed(1)} ${backWaistCBY.toFixed(1)}`,
+    'Z',
+  ].join(' ');
+
+  const contours = [frontContour, backContour];
+
+  const backDartX = (backWaistCBX + backWaistSideX) / 2;
+  const backDartY = (backWaistCBY + backWaistSideY) / 2;
+  const darts = [
+    [new Point2D(backDartX - 10, backDartY), new Point2D(backDartX, backDartY + 80), new Point2D(backDartX + 10, backDartY)],
+  ];
+
+  const grainlines = [
+    { from: new Point2D(xCreaseMm, 20), to: new Point2D(xCreaseMm, yHemMm - 20) },
+  ];
+
   return {
     blockType: 'TROUSER',
     method,
@@ -556,6 +997,11 @@ export function draftBasicTrouser(measurements, options = {}) {
     backInseamTarget,
     points,
     steps,
+    boundingBox: { minX: -ExtBack * 10, minY: 0, width: (WfrontHip + ExtFront + ExtBack) * 10 + 20, height: yHemMm + 20 },
+    constructionLines,
+    contours,
+    grainlines,
+    darts,
   };
 }
 
@@ -737,4 +1183,67 @@ ${draftResult.blockType} - ${draftResult.method}
 ENDSEC
 0
 EOF`;
+}
+
+/**
+ * 6. CENTRAL PATTERN DISPATCHER (for test harness parity)
+ */
+export function draftPattern(input) {
+  const { blockType, method = 'MULLER', measurements = {}, postureAdjustments = {}, fitPreference = 'CLASSIC' } = input;
+
+  let baseResult;
+  switch (blockType) {
+    case 'SKIRT':
+      baseResult = draftBasicSkirt(measurements, {
+        method,
+        fitPreference,
+        posture: postureAdjustments,
+      });
+      break;
+
+    case 'BODICE':
+      baseResult = draftBasicBodice(measurements, {
+        method,
+        fitPreference,
+        posture: postureAdjustments,
+      });
+      break;
+
+    case 'SLEEVE': {
+      const bodiceRef = draftBasicBodice(measurements, {
+        method,
+        fitPreference,
+        posture: postureAdjustments,
+      });
+      baseResult = draftBasicSleeve(bodiceRef, measurements);
+      break;
+    }
+
+    case 'TROUSER':
+      baseResult = draftBasicTrouser(measurements, {
+        method,
+        fitPreference,
+        posture: postureAdjustments,
+      });
+      break;
+
+    default:
+      throw new Error(`Unsupported pattern block type: ${blockType}`);
+  }
+
+  const boundingBox = baseResult.boundingBox || {
+    minX: 0,
+    minY: 0,
+    width: 800,
+    height: 1000,
+  };
+
+  return {
+    ...baseResult,
+    boundingBox,
+    exportA4Pdf: () => exportA4TiledPdf(baseResult),
+    exportA0Pdf: () => exportA0PlotterPdf(baseResult),
+    exportSvg: () => generatePatternSvg(baseResult),
+    exportDxf: () => generateAAMADxf(baseResult),
+  };
 }

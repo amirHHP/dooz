@@ -1,6 +1,7 @@
 import React from 'react';
 import { prisma } from '@/lib/db';
 import { MarketplacePattern, SEEDED_PATTERNS } from '@/types/marketplace';
+import { resolvePatternImage } from '@/lib/pattern-image';
 import { MarketplaceFilterBar } from '@/components/marketplace/filter-bar';
 import { PatternCard } from '@/components/marketplace/pattern-card';
 import { ShoppingBag, Sparkles, SlidersHorizontal } from 'lucide-react';
@@ -84,7 +85,7 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
       return true;
     }).map((p) => ({
       ...p,
-      coverImage: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800',
+      coverImage: resolvePatternImage(null, p.slug),
       galleryImages: [],
       description: 'الگوی استاندارد خیاطی صنعتی با دستورالعمل‌های گام‌به‌گام و جدول راهنمای متراژ پارچه.',
       creator: { name: 'استودیو طراحی دوز' },

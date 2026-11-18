@@ -11,6 +11,7 @@ import {
 } from '@/types/marketplace';
 import { formatToman, toPersianDigits } from '@/lib/format';
 import { Star, Scissors, UserCheck } from 'lucide-react';
+import { PatternImage } from '@/components/ui/pattern-image';
 
 export interface PatternCardProps {
   pattern: MarketplacePattern;
@@ -45,8 +46,9 @@ export function PatternCard({ pattern }: PatternCardProps) {
       <div className="space-y-3">
         {/* Cover Image Container (4:3) */}
         <div className="relative aspect-[4/3] w-full bg-muted overflow-hidden">
-          <img
-            src={pattern.coverImage || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800'}
+          <PatternImage
+            src={pattern.coverImage}
+            slug={pattern.slug}
             alt={pattern.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy"

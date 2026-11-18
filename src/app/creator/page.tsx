@@ -1,8 +1,10 @@
 import React from "react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { formatToman } from "@/lib/format";
+import { PatternImage } from "@/components/ui/pattern-image";
 
 export const metadata = {
   title: "استودیو طراحان | دوز (Dooz)",
@@ -11,26 +13,20 @@ export const metadata = {
 
 export default async function CreatorDashboardPage() {
   const session = await auth();
-  let userId = session?.user?.id;
+  const userId = session?.user?.id;
 
-  // Fallback to seeded creator for testing/development
   if (!userId) {
-    const creatorUser = await prisma.user.findFirst({
-      where: { role: "CREATOR" },
-    });
-    if (creatorUser) userId = creatorUser.id;
+    redirect("/login?callbackUrl=/creator");
   }
 
-  const creator = userId
-    ? await prisma.user.findUnique({
-        where: { id: userId },
-        include: {
-          createdPatterns: {
-            orderBy: { createdAt: "desc" },
-          },
-        },
-      })
-    : null;
+  const creator = await prisma.user.findUnique({
+    where: { id: userId },
+    include: {
+      createdPatterns: {
+        orderBy: { createdAt: "desc" },
+      },
+    },
+  });
 
   const patterns = creator?.createdPatterns || [];
   const totalSales = patterns.reduce((sum, p) => sum + (p.salesCount || 0), 0);
@@ -170,17 +166,12 @@ export default async function CreatorDashboardPage() {
                 >
                   <div className="flex items-center gap-4">
                     <div className="w-16 h-16 rounded-xl bg-slate-100 dark:bg-slate-800 overflow-hidden shrink-0 border border-slate-200 dark:border-slate-700">
-                      {p.coverImage ? (
-                        <img
-                          src={p.coverImage}
-                          alt={p.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-xs text-slate-400">
-                          بدون کاور
-                        </div>
-                      )}
+                      <PatternImage
+                        src={p.coverImage}
+                        slug={p.slug}
+                        alt={p.title}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">

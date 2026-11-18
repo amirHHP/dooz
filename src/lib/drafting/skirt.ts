@@ -4,7 +4,7 @@
 
 import { Point2D, CubicBezier } from './geometry';
 import { getFitEase } from './posture';
-import { ConstructionStep, DraftingMethod, FitPreference, PostureAdjustments } from '@/types/drafting';
+import { ConstructionLine, ConstructionStep, DraftingMethod, FitPreference, PostureAdjustments } from '@/types/drafting';
 
 export interface SkirtMeasurements {
   waist?: number;
@@ -40,6 +40,10 @@ export interface SkirtDraftResult {
   frontSideSeamLength: number;
   steps: ConstructionStep[];
   boundingBox: { minX: number; minY: number; width: number; height: number };
+  constructionLines: ConstructionLine[];
+  contours: string[];
+  grainlines?: Array<{ from: Point2D; to: Point2D }>;
+  darts?: Array<Array<Point2D>>;
 }
 
 export function draftBasicSkirt(
@@ -195,6 +199,99 @@ export function draftBasicSkirt(
     },
   ];
 
+  // Darts geometry
+  const dartTipYBack = hipDepthMm - 40;
+  const dartTipYFront = Math.min(hipDepthMm - 60, 100);
+  const frontDartCenterX = (backHipWidth * 10) + ((blockWidthMm - backHipWidth * 10) * 0.5) + frontDartShiftX * 10;
+  const frontDartHalfWidth = (Dfront * 10) / 2;
+
+  let backDartElements: Array<Array<Point2D>> = [];
+  let backWaistPathPart = '';
+
+  if (backDartCount === 2) {
+    const w1 = backDartWidths[0] * 10;
+    const x1 = (backHipWidth * 10) * 0.35;
+    const y1 = hipDepthMm - 30;
+    const w2 = backDartWidths[1] * 10;
+    const x2 = (backHipWidth * 10) * 0.68;
+    const y2 = hipDepthMm - 60;
+
+    backDartElements = [
+      [new Point2D(x1 - w1 / 2, 0), new Point2D(x1, y1), new Point2D(x1 + w1 / 2, 0)],
+      [new Point2D(x2 - w2 / 2, 0), new Point2D(x2, y2), new Point2D(x2 + w2 / 2, 0)],
+    ];
+
+    backWaistPathPart = `L ${(x2 + w2 / 2).toFixed(1)} 0 L ${x2.toFixed(1)} ${y2.toFixed(1)} L ${(x2 - w2 / 2).toFixed(1)} 0 ` +
+      `L ${(x1 + w1 / 2).toFixed(1)} 0 L ${x1.toFixed(1)} ${y1.toFixed(1)} L ${(x1 - w1 / 2).toFixed(1)} 0 `;
+  } else {
+    const w1 = backDartWidths[0] * 10;
+    const x1 = (backHipWidth * 10) * 0.48;
+    const y1 = dartTipYBack;
+
+    backDartElements = [
+      [new Point2D(x1 - w1 / 2, 0), new Point2D(x1, y1), new Point2D(x1 + w1 / 2, 0)],
+    ];
+
+    backWaistPathPart = `L ${(x1 + w1 / 2).toFixed(1)} 0 L ${x1.toFixed(1)} ${y1.toFixed(1)} L ${(x1 - w1 / 2).toFixed(1)} 0 `;
+  }
+
+  const frontDartElements: Array<Point2D> = [
+    new Point2D(frontDartCenterX - frontDartHalfWidth, cfWaistDeltaY * 10),
+    new Point2D(frontDartCenterX, dartTipYFront),
+    new Point2D(frontDartCenterX + frontDartHalfWidth, cfWaistDeltaY * 10),
+  ];
+
+  // Construction lines
+  const constructionLines: ConstructionLine[] = [
+    // Initial bounding frame (کادر مستطیل اولیه)
+    { from: new Point2D(0, 0), to: new Point2D(blockWidthMm, 0), label: 'خط کمر کادر اولیه', type: 'frame' },
+    { from: new Point2D(0, blockHeightMm), to: new Point2D(blockWidthMm, blockHeightMm), label: 'خط لبه دامن (پای دامن)', type: 'frame' },
+    { from: new Point2D(0, 0), to: new Point2D(0, blockHeightMm), label: 'خط راستای وسط پشت (CB)', type: 'frame' },
+    { from: new Point2D(blockWidthMm, 0), to: new Point2D(blockWidthMm, blockHeightMm), label: 'خط راستای وسط جلو (CF)', type: 'frame' },
+    // Horizontal guide level
+    { from: new Point2D(0, hipDepthMm), to: new Point2D(blockWidthMm, hipDepthMm), label: 'خط باسن بزرگ', type: 'guide' },
+    // Vertical balance / division axis
+    { from: new Point2D(backHipWidth * 10, 0), to: new Point2D(backHipWidth * 10, blockHeightMm), label: 'خط پهلو (محور تقسیم پشت و جلو)', type: 'axis' },
+  ];
+
+  // Contours (true cut outline SVG paths)
+  const backContour = [
+    `M ${points.cbWaist.x.toFixed(1)} ${points.cbWaist.y.toFixed(1)}`,
+    `L ${points.cbHip.x.toFixed(1)} ${points.cbHip.y.toFixed(1)}`,
+    `L ${points.cbHem.x.toFixed(1)} ${points.cbHem.y.toFixed(1)}`,
+    `L ${points.sideHem.x.toFixed(1)} ${points.sideHem.y.toFixed(1)}`,
+    `L ${points.sideHip.x.toFixed(1)} ${points.sideHip.y.toFixed(1)}`,
+    `C ${backHipCurve.c2.x.toFixed(1)} ${backHipCurve.c2.y.toFixed(1)} ${backHipCurve.c1.x.toFixed(1)} ${backHipCurve.c1.y.toFixed(1)} ${points.sideWaistBack.x.toFixed(1)} ${points.sideWaistBack.y.toFixed(1)}`,
+    backWaistPathPart + `L ${points.cbWaist.x.toFixed(1)} ${points.cbWaist.y.toFixed(1)}`,
+    'Z',
+  ].join(' ');
+
+  const frontHipC1X = points.sideWaistFront.x - 3 - hipCurveControlOffset;
+  const frontHipC1Y = points.sideWaistFront.y + 0.35 * (points.sideHip.y - points.sideWaistFront.y);
+  const frontHipC2X = points.sideHip.x - 2 - hipCurveControlOffset;
+  const frontHipC2Y = points.sideHip.y - 0.20 * (points.sideHip.y - points.sideWaistFront.y);
+
+  const frontContour = [
+    `M ${points.cfWaist.x.toFixed(1)} ${points.cfWaist.y.toFixed(1)}`,
+    `L ${(frontDartCenterX + frontDartHalfWidth).toFixed(1)} ${(cfWaistDeltaY * 10).toFixed(1)}`,
+    `L ${frontDartCenterX.toFixed(1)} ${dartTipYFront.toFixed(1)}`,
+    `L ${(frontDartCenterX - frontDartHalfWidth).toFixed(1)} ${(cfWaistDeltaY * 10).toFixed(1)}`,
+    `L ${points.sideWaistFront.x.toFixed(1)} ${points.sideWaistFront.y.toFixed(1)}`,
+    `C ${frontHipC1X.toFixed(1)} ${frontHipC1Y.toFixed(1)} ${frontHipC2X.toFixed(1)} ${frontHipC2Y.toFixed(1)} ${points.sideHip.x.toFixed(1)} ${points.sideHip.y.toFixed(1)}`,
+    `L ${points.sideHem.x.toFixed(1)} ${points.sideHem.y.toFixed(1)}`,
+    `L ${points.cfHem.x.toFixed(1)} ${points.cfHem.y.toFixed(1)}`,
+    `L ${points.cfHip.x.toFixed(1)} ${points.cfHip.y.toFixed(1)}`,
+    `L ${points.cfWaist.x.toFixed(1)} ${points.cfWaist.y.toFixed(1)}`,
+    'Z',
+  ].join(' ');
+
+  const contours = [backContour, frontContour];
+  const darts = [...backDartElements, frontDartElements];
+  const grainlines = [
+    { from: new Point2D((backHipWidth * 10) / 2, hipDepthMm - 40), to: new Point2D((backHipWidth * 10) / 2, blockHeightMm - 60) },
+    { from: new Point2D((backHipWidth * 10 + blockWidthMm) / 2, hipDepthMm - 40), to: new Point2D((backHipWidth * 10 + blockWidthMm) / 2, blockHeightMm - 60) },
+  ];
+
   return {
     blockType: 'SKIRT',
     method,
@@ -215,5 +312,9 @@ export function draftBasicSkirt(
     frontSideSeamLength,
     steps,
     boundingBox: { minX: 0, minY: -waistRise * 10, width: blockWidthMm, height: blockHeightMm + 20 },
+    constructionLines,
+    contours,
+    grainlines,
+    darts,
   };
 }

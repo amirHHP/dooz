@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-blazer" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#f1f5f9"/>
+    </linearGradient>
+    <pattern id="grid-blazer" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#475569" stroke-width="0.5" stroke-opacity="0.12"/>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#bg-blazer)"/>
+  <rect width="100%" height="100%" fill="url(#grid-blazer)"/>
+  
+  <rect x="30" y="30" width="740" height="540" rx="16" fill="none" stroke="#334155" stroke-width="1.5" stroke-dasharray="6 4" stroke-opacity="0.3"/>
+  
+  <!-- Classic Tailored Blazer Coat -->
+  <g transform="translate(245, 60)">
+    <!-- Blazer Body & Sleeves -->
+    <path d="M 110 40 L 200 40 L 260 160 L 225 175 L 205 110 L 220 380 L 90 380 L 105 110 L 85 175 L 50 160 Z" fill="#ffffff" stroke="#0f172a" stroke-width="3.5" stroke-linejoin="round"/>
+    
+    <!-- Tailored Notch Lapel & Collar -->
+    <!-- Collar Stand -->
+    <path d="M 120 40 L 190 40 L 180 75 L 130 75 Z" fill="#e2e8f0" stroke="#0f172a" stroke-width="2.5"/>
+    <!-- Left Lapel with Notch -->
+    <path d="M 130 75 L 95 110 L 140 160 L 155 240 L 145 75 Z" fill="#f1f5f9" stroke="#0f172a" stroke-width="2.5"/>
+    <!-- Right Lapel with Notch -->
+    <path d="M 180 75 L 215 110 L 170 160 L 155 240 L 165 75 Z" fill="#f1f5f9" stroke="#0f172a" stroke-width="2.5"/>
+    
+    <!-- Breast Pocket (Chest Welt Pocket) -->
+    <rect x="110" y="150" width="30" height="10" rx="2" fill="#e2e8f0" stroke="#0f172a" stroke-width="1.8"/>
+    
+    <!-- Flap Pockets at Hip -->
+    <rect x="95" y="270" width="45" height="18" rx="2" fill="#e2e8f0" stroke="#0f172a" stroke-width="2"/>
+    <rect x="170" y="270" width="45" height="18" rx="2" fill="#e2e8f0" stroke="#0f172a" stroke-width="2"/>
+    
+    <!-- Center Front Buttons -->
+    <circle cx="155" cy="255" r="4.5" fill="#0f172a"/>
+    <circle cx="155" cy="305" r="4.5" fill="#0f172a"/>
+    
+    <!-- Waist Shaping Darts -->
+    <line x1="125" y1="210" x2="125" y2="280" stroke="#475569" stroke-width="1.8"/>
+    <line x1="185" y1="210" x2="185" y2="280" stroke="#475569" stroke-width="1.8"/>
+  </g>
+  
+  <g transform="translate(400, 525)" text-anchor="middle">
+    <rect x="-180" y="-30" width="360" height="42" rx="21" fill="#0f172a"/>
+    <text y="-4" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="bold">مانتو کتی کلاسیک (کت بلیزر)</text>
+  </g>
+</svg>

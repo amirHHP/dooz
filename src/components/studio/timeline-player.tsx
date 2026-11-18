@@ -88,7 +88,8 @@ export function StudioTimelinePlayer({
     setShowAll(!showAll);
   };
 
-  const activeStep = steps[currentIndex] || steps[0] || {
+  const safeIndex = steps.length > 0 ? Math.min(currentIndex, steps.length - 1) : 0;
+  const activeStep = steps[safeIndex] || steps[0] || {
     stepIndex: 0,
     titleFa: 'مرحله ساخت الگو',
     instructionFa: 'در حال محاسبه نقاط و خطوط مبنای الگو...',
@@ -151,7 +152,7 @@ export function StudioTimelinePlayer({
         {/* Step Counter Badge */}
         <div className="text-xs font-bold bg-muted px-3.5 py-1.5 rounded-xl text-foreground flex items-center gap-1">
           <span>مرحله</span>
-          <span className="text-primary font-mono text-sm">{toPersianDigits(currentIndex + 1)}</span>
+          <span className="text-primary font-mono text-sm">{toPersianDigits(safeIndex + 1)}</span>
           <span>از</span>
           <span className="font-mono text-sm">{toPersianDigits(totalSteps)}</span>
         </div>

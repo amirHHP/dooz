@@ -5,11 +5,12 @@ import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { UserRole } from "@/types/next-auth";
+import { verifyOtp } from "@/lib/otp";
 
 /**
  * Normalizes Persian and Arabic numerals to ASCII digits.
  */
-function normalizeDigits(input: string): string {
+export function normalizeDigits(input: string): string {
   const persianDigits = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
   const arabicDigits = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"];
   let output = input;
@@ -36,7 +37,8 @@ export const authConfig: NextAuthConfig = {
       name: "شماره موبایل یا ایمیل",
       credentials: {
         identifier: { label: "ایمیل یا شماره موبایل", type: "text" },
-        password: { label: "رمز عبور", type: "password" },
+        password: { label: "رمز عبور یا کد یکبار مصرف", type: "password" },
+        authType: { label: "نوع احراز هویت", type: "text" },
       },
       async authorize(credentials) {
         if (!credentials?.identifier || !credentials?.password) {
@@ -45,10 +47,47 @@ export const authConfig: NextAuthConfig = {
 
         const rawIdentifier = String(credentials.identifier);
         const normalizedIdentifier = normalizeDigits(rawIdentifier);
-        const password = String(credentials.password);
+        const secret = String(credentials.password);
+        const authType = credentials.authType ? String(credentials.authType) : "password";
 
         try {
-          // Query user by email (lowercase) or normalized phone
+          // 1. Handle OTP Verification
+          if (authType === "otp") {
+            const cleanEmail = normalizedIdentifier.toLowerCase();
+            const otpCheck = verifyOtp(cleanEmail, secret);
+            if (!otpCheck.valid) {
+              console.warn("OTP verification failed:", otpCheck.error);
+              return null;
+            }
+
+            // Find existing user or auto-register with default role USER
+            let user = await prisma.user.findUnique({
+              where: { email: cleanEmail },
+            });
+
+            if (!user) {
+              user = await prisma.user.create({
+                data: {
+                  email: cleanEmail,
+                  name: cleanEmail.split("@")[0] || "کاربر دوز",
+                  role: "USER",
+                  walletBalance: 0,
+                  bio: "عضو استودیو الگوسازی دوز",
+                },
+              });
+            }
+
+            return {
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              role: user.role as UserRole,
+              phone: user.phone,
+              image: user.avatar,
+            };
+          }
+
+          // 2. Handle Password Verification
           const user = await prisma.user.findFirst({
             where: {
               OR: [
@@ -62,7 +101,7 @@ export const authConfig: NextAuthConfig = {
             return null;
           }
 
-          const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+          const isPasswordValid = await bcrypt.compare(secret, user.passwordHash);
           if (!isPasswordValid) {
             return null;
           }

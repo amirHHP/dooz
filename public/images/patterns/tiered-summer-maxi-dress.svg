@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-maxi" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff1f2"/>
+      <stop offset="100%" stop-color="#ffe4e6"/>
+    </linearGradient>
+    <pattern id="grid-maxi" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e11d48" stroke-width="0.5" stroke-opacity="0.12"/>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#bg-maxi)"/>
+  <rect width="100%" height="100%" fill="url(#grid-maxi)"/>
+  
+  <rect x="30" y="30" width="740" height="540" rx="16" fill="none" stroke="#be123c" stroke-width="1.5" stroke-dasharray="6 4" stroke-opacity="0.3"/>
+  
+  <!-- Tiered Summer Maxi Dress -->
+  <g transform="translate(250, 45)">
+    <!-- Boat Neck & Fitted Bodice -->
+    <path d="M 90 40 Q 150 55 210 40 L 225 120 L 205 150 L 95 150 L 75 120 Z" fill="#ffffff" stroke="#881337" stroke-width="3" stroke-linejoin="round"/>
+    
+    <!-- Bodice Darts -->
+    <line x1="125" y1="150" x2="135" y2="105" stroke="#e11d48" stroke-width="1.8"/>
+    <line x1="175" y1="150" x2="165" y2="105" stroke="#e11d48" stroke-width="1.8"/>
+    
+    <!-- Tier 1 Skirt -->
+    <path d="M 95 150 Q 150 155 205 150 L 225 230 Q 150 240 75 230 Z" fill="#ffffff" stroke="#881337" stroke-width="3" stroke-linejoin="round"/>
+    <!-- Gather lines Tier 1 -->
+    <path d="M 95 150 Q 110 165 115 150 Q 130 165 135 150 Q 150 165 155 150 Q 170 165 175 150 Q 190 165 205 150" fill="none" stroke="#f43f5e" stroke-width="1.5"/>
+    
+    <!-- Tier 2 Skirt (Wider) -->
+    <path d="M 75 230 Q 150 240 225 230 L 255 320 Q 150 335 45 320 Z" fill="#ffffff" stroke="#881337" stroke-width="3" stroke-linejoin="round"/>
+    <!-- Gather lines Tier 2 -->
+    <path d="M 75 230 Q 105 245 120 230 Q 150 245 165 230 Q 195 245 225 230" fill="none" stroke="#f43f5e" stroke-width="1.5"/>
+    
+    <!-- Tier 3 Skirt (Flared Maxi Hem) -->
+    <path d="M 45 320 Q 150 335 255 320 L 290 415 Q 150 435 10 415 Z" fill="#ffffff" stroke="#881337" stroke-width="3" stroke-linejoin="round"/>
+    <!-- Gather lines Tier 3 -->
+    <path d="M 45 320 Q 85 338 105 320 Q 150 338 175 320 Q 215 338 255 320" fill="none" stroke="#f43f5e" stroke-width="1.5"/>
+  </g>
+  
+  <g transform="translate(400, 525)" text-anchor="middle">
+    <rect x="-195" y="-30" width="390" height="42" rx="21" fill="#881337"/>
+    <text y="-4" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="bold">پیراهن ماکسی چین‌دار با یقه قایقی</text>
+  </g>
+</svg>

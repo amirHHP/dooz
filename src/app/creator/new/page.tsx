@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { WizardStep1, WizardStep1Data, validateWizardStep1 } from "@/components/creator/wizard-step-1";
 import { WizardStep2, WizardStep2Data } from "@/components/creator/wizard-step-2";
 import { WizardStep3, WizardStep3Data } from "@/components/creator/wizard-step-3";
@@ -56,7 +57,7 @@ const INITIAL_DATA: PatternWizardFormData = {
   baseBlock: "BODICE",
   fitType: "CLASSIC",
   difficulty: "INTERMEDIATE",
-  coverImage: "/images/patterns/casual-raglan-trench-coat.jpg",
+  coverImage: "/images/patterns/casual-trench-coat-raglan.svg",
   technicalFlatFront: `<svg viewBox="0 0 200 300" xmlns="http://www.w3.org/2000/svg"><path d="M70,30 L130,30 L150,60 L140,280 L60,280 L50,60 Z" stroke="#334155" fill="none" stroke-width="2"/></svg>`,
   technicalFlatBack: `<svg viewBox="0 0 200 300" xmlns="http://www.w3.org/2000/svg"><path d="M70,30 L130,30 L150,60 L140,280 L60,280 L50,60 Z" stroke="#334155" fill="none" stroke-width="2"/><line x1="100" y1="30" x2="100" y2="280" stroke="#64748b" stroke-dasharray="4"/></svg>`,
   galleryImages: [],
@@ -88,6 +89,14 @@ const STEPS = [
 
 export default function NewPatternWizardPage() {
   const router = useRouter();
+  const { status } = useSession();
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login?callbackUrl=/creator/new");
+    }
+  }, [status, router]);
+
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<PatternWizardFormData>(INITIAL_DATA);
   const [errors, setErrors] = useState<Record<string, string>>({});

@@ -4,7 +4,7 @@
 
 import { Point2D } from './geometry';
 import { getFitEase } from './posture';
-import { ConstructionStep, DraftingMethod, FitPreference, PostureAdjustments } from '@/types/drafting';
+import { ConstructionLine, ConstructionStep, DraftingMethod, FitPreference, PostureAdjustments } from '@/types/drafting';
 
 export interface BodiceMeasurements {
   bust?: number;
@@ -49,6 +49,10 @@ export interface BodiceDraftResult {
   points: Record<string, Point2D>;
   steps: ConstructionStep[];
   boundingBox?: { minX: number; minY: number; width: number; height: number };
+  constructionLines: ConstructionLine[];
+  contours: string[];
+  grainlines?: Array<{ from: Point2D; to: Point2D }>;
+  darts?: Array<Array<Point2D>>;
 }
 
 export function draftBasicBodice(
@@ -184,6 +188,95 @@ export function draftBasicBodice(
     },
   ];
 
+  // Bodice construction lines & contours
+  const underarmYMm = (Da + underarmDrop) * 10;
+  const waistYMm = effectiveBL * 10;
+  const frontWaistYMm = (effectiveBL + frontLengthOffset) * 10;
+  const blockWidthMm = Wblock * 10;
+
+  // Back dart & waist points
+  const backSideWaistX = (Rb + Ad / 2 - sideSeamSuppression / 2) * 10;
+  const backDartCenterX = Rb * 5;
+  const backDartApexY = underarmYMm + 20;
+  const backDartHalfW = (backDartWidth * 10) / 2;
+
+  // Front dart & waist points
+  const frontSideWaistX = (Rb + Ad / 2 + sideSeamSuppression / 2) * 10;
+  const frontDartCenterX = points.bustApex.x;
+  const frontDartHalfW = (frontDartWidth * 10) / 2;
+  const frontDartApexY = points.bustApex.y + 25;
+
+  // Front neck & shoulder points
+  const frontNeckX = (Wblock - Hw) * 10;
+  const frontNeckY = -15;
+  const frontNeckPitX = blockWidthMm;
+  const frontNeckPitY = (Hw + 0.5) * 10;
+  const frontShoulderTipX = (Rb + Ad + 0.5) * 10;
+  const frontShoulderTipY = (Da / 3 + shoulderTipDrop + 1.5) * 10;
+
+  // Construction lines
+  const constructionLines: ConstructionLine[] = [
+    // Initial bounding frame (کادر مستطیل اولیه)
+    { from: new Point2D(0, 0), to: new Point2D(blockWidthMm, 0), label: 'خط گردن / کادر بالایی', type: 'frame' },
+    { from: new Point2D(0, waistYMm), to: new Point2D(blockWidthMm, waistYMm), label: 'خط کمر کادر اولیه', type: 'frame' },
+    { from: new Point2D(0, 0), to: new Point2D(0, waistYMm), label: 'خط مرکزی پشت (CB)', type: 'frame' },
+    { from: new Point2D(blockWidthMm, 0), to: new Point2D(blockWidthMm, frontWaistYMm), label: 'خط مرکزی جلو (CF)', type: 'frame' },
+    // Horizontal guide levels
+    { from: new Point2D(0, underarmYMm), to: new Point2D(blockWidthMm, underarmYMm), label: 'خط کف حلقه و سینه', type: 'guide' },
+    { from: new Point2D(Rb * 10, bustHeight * 10), to: new Point2D(blockWidthMm, bustHeight * 10), label: 'خط بلندی سینه', type: 'guide' },
+    // Vertical balance / division axes
+    { from: new Point2D(Rb * 10, 0), to: new Point2D(Rb * 10, underarmYMm), label: 'خط راهنمای کارور پشت', type: 'guide' },
+    { from: new Point2D((Rb + Ad) * 10, 0), to: new Point2D((Rb + Ad) * 10, underarmYMm), label: 'خط راهنمای کارور جلو', type: 'guide' },
+    { from: new Point2D((Rb + Ad / 2) * 10, underarmYMm), to: new Point2D((Rb + Ad / 2) * 10, waistYMm), label: 'خط عمود پهلو', type: 'axis' },
+    { from: new Point2D(frontDartCenterX, points.bustApex.y), to: new Point2D(frontDartCenterX, frontWaistYMm), label: 'محور ساسون زیر سینه', type: 'axis' },
+    { from: new Point2D(backDartCenterX, underarmYMm), to: new Point2D(backDartCenterX, waistYMm), label: 'محور ساسون پشت', type: 'guide' },
+  ];
+
+  // Contours (true cut outline SVG paths for Back and Front bodice pieces)
+  const backContour = [
+    `M ${points.nape.x.toFixed(1)} ${points.nape.y.toFixed(1)}`,
+    `Q ${(Hw * 5).toFixed(1)} 0, ${points.backNeck.x.toFixed(1)} ${points.backNeck.y.toFixed(1)}`,
+    `L ${points.backShoulderTip.x.toFixed(1)} ${points.backShoulderTip.y.toFixed(1)}`,
+    `C ${(Rb * 10 + 2).toFixed(1)} ${(points.backShoulderTip.y + 15).toFixed(1)}, ${(Rb * 10).toFixed(1)} ${(points.sideSeamUnderarm.y - 15).toFixed(1)}, ${points.sideSeamUnderarm.x.toFixed(1)} ${points.sideSeamUnderarm.y.toFixed(1)}`,
+    `L ${backSideWaistX.toFixed(1)} ${waistYMm.toFixed(1)}`,
+    `L ${(backDartCenterX + backDartHalfW).toFixed(1)} ${waistYMm.toFixed(1)}`,
+    `L ${backDartCenterX.toFixed(1)} ${backDartApexY.toFixed(1)}`,
+    `L ${(backDartCenterX - backDartHalfW).toFixed(1)} ${waistYMm.toFixed(1)}`,
+    `L ${points.cbWaist.x.toFixed(1)} ${points.cbWaist.y.toFixed(1)}`,
+    `L ${points.nape.x.toFixed(1)} ${points.nape.y.toFixed(1)}`,
+    'Z',
+  ].join(' ');
+
+  const frontContour = [
+    `M ${frontNeckPitX.toFixed(1)} ${frontNeckPitY.toFixed(1)}`,
+    `L ${points.cfWaist.x.toFixed(1)} ${points.cfWaist.y.toFixed(1)}`,
+    `L ${(frontDartCenterX + frontDartHalfW).toFixed(1)} ${points.cfWaist.y.toFixed(1)}`,
+    `L ${frontDartCenterX.toFixed(1)} ${frontDartApexY.toFixed(1)}`,
+    `L ${(frontDartCenterX - frontDartHalfW).toFixed(1)} ${points.cfWaist.y.toFixed(1)}`,
+    `L ${frontSideWaistX.toFixed(1)} ${waistYMm.toFixed(1)}`,
+    `L ${points.sideSeamUnderarm.x.toFixed(1)} ${points.sideSeamUnderarm.y.toFixed(1)}`,
+    `C ${(points.sideSeamUnderarm.x + 10).toFixed(1)} ${(points.sideSeamUnderarm.y - 5).toFixed(1)}, ${((Rb + Ad) * 10).toFixed(1)} ${(points.sideSeamUnderarm.y - 20).toFixed(1)}, ${frontShoulderTipX.toFixed(1)} ${frontShoulderTipY.toFixed(1)}`,
+    `L ${(frontShoulderTipX + 15).toFixed(1)} ${(frontShoulderTipY - 5).toFixed(1)}`,
+    `L ${points.bustApex.x.toFixed(1)} ${points.bustApex.y.toFixed(1)}`,
+    `L ${(frontNeckX - 10).toFixed(1)} ${(frontNeckY + 5).toFixed(1)}`,
+    `L ${frontNeckX.toFixed(1)} ${frontNeckY.toFixed(1)}`,
+    `Q ${blockWidthMm.toFixed(1)} ${frontNeckY.toFixed(1)}, ${frontNeckPitX.toFixed(1)} ${frontNeckPitY.toFixed(1)}`,
+    'Z',
+  ].join(' ');
+
+  const contours = [backContour, frontContour];
+
+  const darts = [
+    [new Point2D(backDartCenterX - backDartHalfW, waistYMm), new Point2D(backDartCenterX, backDartApexY), new Point2D(backDartCenterX + backDartHalfW, waistYMm)],
+    [new Point2D(frontDartCenterX - frontDartHalfW, points.cfWaist.y), new Point2D(frontDartCenterX, frontDartApexY), new Point2D(frontDartCenterX + frontDartHalfW, points.cfWaist.y)],
+    [new Point2D(frontShoulderTipX + 15, frontShoulderTipY - 5), points.bustApex, new Point2D(frontNeckX - 10, frontNeckY + 5)],
+  ];
+
+  const grainlines = [
+    { from: new Point2D(Rb * 5, 50), to: new Point2D(Rb * 5, waistYMm - 30) },
+    { from: new Point2D(frontDartCenterX, points.bustApex.y + 30), to: new Point2D(frontDartCenterX, frontWaistYMm - 30) },
+  ];
+
   return {
     blockType: 'BODICE',
     method,
@@ -204,5 +297,9 @@ export function draftBasicBodice(
     points,
     steps,
     boundingBox: { minX: 0, minY: -20, width: Wblock * 10, height: (effectiveBL + frontLengthOffset) * 10 + 20 },
+    constructionLines,
+    contours,
+    grainlines,
+    darts,
   };
 }

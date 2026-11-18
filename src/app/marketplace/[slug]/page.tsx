@@ -23,6 +23,7 @@ import {
   ShoppingBag,
   User,
 } from 'lucide-react';
+import { PatternImage } from '@/components/ui/pattern-image';
 
 interface PatternDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -189,8 +190,9 @@ export default async function PatternDetailPage({ params }: PatternDetailPagePro
         {/* Gallery / Cover Image */}
         <div className="space-y-3">
           <div className="aspect-[4/3] rounded-3xl bg-muted overflow-hidden border shadow-sm">
-            <img
-              src={currentPattern.coverImage || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1000'}
+            <PatternImage
+              src={currentPattern.coverImage}
+              slug={currentPattern.slug}
               alt={currentPattern.title}
               className="w-full h-full object-cover"
             />

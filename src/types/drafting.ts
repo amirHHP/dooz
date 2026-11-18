@@ -51,6 +51,13 @@ export interface ConstructionElementHighlight {
   type: 'POINT' | 'LINE' | 'CURVE';
 }
 
+export interface ConstructionLine {
+  from: { x: number; y: number; label?: string };
+  to: { x: number; y: number; label?: string };
+  label?: string;
+  type?: 'frame' | 'guide' | 'axis';
+}
+
 export interface ConstructionStep {
   stepIndex: number;
   titleFa: string;
@@ -114,6 +121,10 @@ export interface PatternGeometry {
   boundingBox: BoundingBox2D;
   steps: ConstructionStep[];
   points: Record<string, { x: number; y: number; label?: string }>;
+  constructionLines?: ConstructionLine[];
+  contours?: string[];
+  grainlines?: Array<{ from: { x: number; y: number }; to: { x: number; y: number } }>;
+  darts?: Array<Array<{ x: number; y: number }>>;
   exportA4Pdf: () => Promise<Uint8Array>;
   exportA0Pdf: () => Promise<Uint8Array>;
   exportSvg: () => string;

@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-hwlp" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f0fdfa"/>
+      <stop offset="100%" stop-color="#ccfbf1"/>
+    </linearGradient>
+    <pattern id="grid-hwlp" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#0d9488" stroke-width="0.5" stroke-opacity="0.12"/>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#bg-hwlp)"/>
+  <rect width="100%" height="100%" fill="url(#grid-hwlp)"/>
+  
+  <!-- Outer Frame & Measurement Marks -->
+  <rect x="30" y="30" width="740" height="540" rx="16" fill="none" stroke="#0f766e" stroke-width="1.5" stroke-dasharray="6 4" stroke-opacity="0.3"/>
+  
+  <!-- Fashion Flat Drawing: High-Waisted Wide Leg Pants -->
+  <g transform="translate(250, 70)">
+    <!-- Shadow -->
+    <path d="M 60 40 L 240 40 L 270 420 L 190 420 L 150 180 L 110 420 L 30 420 Z" fill="#0f766e" fill-opacity="0.06"/>
+    <!-- Main Pants Body -->
+    <path d="M 60 40 L 240 40 L 265 410 L 190 410 L 150 170 L 110 410 L 35 410 Z" fill="#ffffff" stroke="#134e4a" stroke-width="3.5" stroke-linejoin="round"/>
+    
+    <!-- High Waistband -->
+    <path d="M 60 40 L 240 40 L 240 75 L 60 75 Z" fill="#f0fdfa" stroke="#134e4a" stroke-width="3"/>
+    <!-- Belt loops -->
+    <line x1="85" y1="40" x2="85" y2="75" stroke="#134e4a" stroke-width="2.5"/>
+    <line x1="130" y1="40" x2="130" y2="75" stroke="#134e4a" stroke-width="2.5"/>
+    <line x1="170" y1="40" x2="170" y2="75" stroke="#134e4a" stroke-width="2.5"/>
+    <line x1="215" y1="40" x2="215" y2="75" stroke="#134e4a" stroke-width="2.5"/>
+    
+    <!-- Fly Front Zip -->
+    <path d="M 150 75 L 150 160 C 140 160 135 150 135 130" fill="none" stroke="#134e4a" stroke-width="2.5" stroke-dasharray="4 2"/>
+    
+    <!-- Twin Front Pleats (Left & Right) -->
+    <line x1="100" y1="75" x2="90" y2="170" stroke="#0d9488" stroke-width="2"/>
+    <line x1="115" y1="75" x2="108" y2="150" stroke="#0d9488" stroke-width="1.8"/>
+    <line x1="200" y1="75" x2="210" y2="170" stroke="#0d9488" stroke-width="2"/>
+    <line x1="185" y1="75" x2="192" y2="150" stroke="#0d9488" stroke-width="1.8"/>
+    
+    <!-- Center Press Creases -->
+    <line x1="90" y1="170" x2="72" y2="410" stroke="#0d9488" stroke-width="1.5" stroke-dasharray="8 4"/>
+    <line x1="210" y1="170" x2="228" y2="410" stroke="#0d9488" stroke-width="1.5" stroke-dasharray="8 4"/>
+    
+    <!-- Slanted Side Pockets -->
+    <line x1="60" y1="80" x2="80" y2="125" stroke="#134e4a" stroke-width="2.5"/>
+    <line x1="240" y1="80" x2="220" y2="125" stroke="#134e4a" stroke-width="2.5"/>
+    
+    <!-- Hem Stitches -->
+    <line x1="37" y1="395" x2="108" y2="395" stroke="#134e4a" stroke-width="1.5" stroke-dasharray="3 2"/>
+    <line x1="192" y1="395" x2="263" y2="395" stroke="#134e4a" stroke-width="1.5" stroke-dasharray="3 2"/>
+  </g>
+  
+  <!-- Technical Labels & Badge -->
+  <g transform="translate(400, 525)" text-anchor="middle">
+    <rect x="-180" y="-30" width="360" height="42" rx="21" fill="#134e4a"/>
+    <text y="-4" fill="#ffffff" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="bold">شلوار واید لگ با پیلی دوقلو</text>
+  </g>
+</svg>

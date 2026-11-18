@@ -48,7 +48,7 @@ async function main() {
       passwordHash: tailorPasswordHash,
       role: Role.USER,
       bio: "خیاط و طراح لباس زنانه با ۲۰ سال سابقه در شخصی‌دوزی و الگوکشی متدهای مولر و متریک.",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200",
+      avatar: null,
       walletBalance: 0,
     },
   });
@@ -61,7 +61,7 @@ async function main() {
       passwordHash: creatorPasswordHash,
       role: Role.CREATOR,
       bio: "مدرس طراحی لباس و مدلسازی الگو، فارغ‌التحصیل طراحی پارچه و لباس و متخصص متد مولر آلمان.",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200",
+      avatar: null,
       shebaNumber: "IR060560000000012345678901", // Bank Saman
       walletBalance: 2400000, // 2,400,000 Toman
     },
@@ -75,7 +75,7 @@ async function main() {
       passwordHash: adminPasswordHash,
       role: Role.ADMIN,
       bio: "مدیریت سیستم و پشتیبانی پلتفرم تخصصی دوز.",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200",
+      avatar: null,
       walletBalance: 0,
     },
   });
@@ -243,7 +243,7 @@ async function main() {
       fitType: FitType.CLASSIC,
       difficulty: Difficulty.ADVANCED,
       price: 350000,
-      coverImage: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=800",
+      coverImage: "/images/patterns/classic-tailored-blazer-coat.svg",
       galleryImages: [
         "https://images.unsplash.com/photo-1548883354-7622d03aca27?w=800",
         "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=800",
@@ -307,7 +307,7 @@ async function main() {
       fitType: FitType.TIGHT,
       difficulty: Difficulty.ADVANCED,
       price: 420000,
-      coverImage: "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=800",
+      coverImage: "/images/patterns/princess-seam-evening-dress.svg",
       galleryImages: ["https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800"],
       fabricRequirements: {
         recommendedFabrics: ["ساتن آمریکایی", "کرپ کنزو", "میکادو"],
@@ -361,7 +361,7 @@ async function main() {
       fitType: FitType.LOOSE,
       difficulty: Difficulty.INTERMEDIATE,
       price: 180000,
-      coverImage: "https://images.unsplash.com/photo-1604014237800-1c9102c219da?w=800",
+      coverImage: "/images/patterns/bishop-sleeve-blouse.svg",
       galleryImages: ["https://images.unsplash.com/photo-1551803091-e20673f15770?w=800"],
       fabricRequirements: {
         recommendedFabrics: ["حریر کرپ", "ابریشم توییل", "وال نخی", "پوپلین"],
@@ -408,7 +408,7 @@ async function main() {
       fitType: FitType.CLASSIC,
       difficulty: Difficulty.INTERMEDIATE,
       price: 220000,
-      coverImage: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=800",
+      coverImage: "/images/patterns/classic-straight-leg-trousers.svg",
       galleryImages: ["https://images.unsplash.com/photo-1509551388413-e18d0ac5d495?w=800"],
       fabricRequirements: {
         recommendedFabrics: ["فاستونی کش", "کرپ مازراتی", "گاباردین"],
@@ -461,7 +461,7 @@ async function main() {
       fitType: FitType.CLASSIC,
       difficulty: Difficulty.BEGINNER,
       price: 0, // Free pattern
-      coverImage: "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=800",
+      coverImage: "/images/patterns/a-line-four-panel-skirt.svg",
       galleryImages: ["https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=800"],
       fabricRequirements: {
         recommendedFabrics: ["پوپلین", "کتان نخ", "جین کاغذی", "کرپ اسکاچی"],
@@ -508,7 +508,7 @@ async function main() {
       fitType: FitType.LOOSE,
       difficulty: Difficulty.BEGINNER,
       price: 120000,
-      coverImage: "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=800",
+      coverImage: "/images/patterns/tiered-summer-maxi-dress.svg",
       galleryImages: ["https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800"],
       fabricRequirements: {
         recommendedFabrics: ["بابوس", "وال خنک نخی", "ابروبادی", "لینن اسلپ"],
@@ -554,7 +554,7 @@ async function main() {
       fitType: FitType.LOOSE,
       difficulty: Difficulty.ADVANCED,
       price: 390000,
-      coverImage: "https://images.unsplash.com/photo-1544441893-675973e31985?w=800",
+      coverImage: "/images/patterns/casual-trench-coat-raglan.svg",
       galleryImages: ["https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=800"],
       fabricRequirements: {
         recommendedFabrics: ["مموری ضدآب", "بارانی شمعی", "گاباردین پشمی"],
@@ -602,7 +602,7 @@ async function main() {
       fitType: FitType.LOOSE,
       difficulty: Difficulty.INTERMEDIATE,
       price: 260000,
-      coverImage: "https://images.unsplash.com/photo-1509551388413-e18d0ac5d495?w=800",
+      coverImage: "/images/patterns/high-waisted-wide-leg-pants.svg",
       galleryImages: ["https://images.unsplash.com/photo-1551803091-e20673f15770?w=800"],
       fabricRequirements: {
         recommendedFabrics: ["کرپ مازراتی سنگین", "لینن والنتینو", "فاستونی ترک"],
