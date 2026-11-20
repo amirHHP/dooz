@@ -298,13 +298,14 @@ export function draftBasicSkirt(measurements, options = {}) {
 }
 
 /**
- * 2. BASIC FITTED BODICE ENGINE
+ * 2. BASIC FITTED BODICE ENGINE (MÜLLER METHOD)
  */
 export function draftBasicBodice(measurements, options = {}) {
   const {
     bust = 88.0,
     waist = 70.0,
     hip = 94.0,
+    hipDepth = 20.0,
     backLength = 41.0,
     frontLength = 43.5,
     acrossBack = 34.5,
@@ -315,6 +316,9 @@ export function draftBasicBodice(measurements, options = {}) {
     bustSpan = 18.5,
   } = measurements;
 
+  const effectiveFL = options.frontLength ?? frontLength;
+  const effectiveBL = options.backLength ?? backLength;
+
   const method = options.method || 'MULLER';
   const fitPreference = options.fitPreference || 'CLASSIC';
   const posture = options.posture || {};
@@ -322,8 +326,9 @@ export function draftBasicBodice(measurements, options = {}) {
   const ease = FIT_EASE[fitPreference] || FIT_EASE.CLASSIC;
   const Eb = ease.bust;
   const Ew = ease.waist;
+  const Eh = ease.hip;
 
-  if (bust <= 0 || waist <= 0 || backLength <= 0) {
+  if (bust <= 0 || waist <= 0 || effectiveBL <= 0) {
     throw new Error('Core bodice measurements must be positive numbers');
   }
 
@@ -353,12 +358,12 @@ export function draftBasicBodice(measurements, options = {}) {
     Bb = acrossFront / 2 + 0.5;
     Dbust = 7.0 + 0.25 * (bust - 90.0);
   } else if (method === 'GRLAWEIN') {
-    Da = backLength / 2;
+    Da = effectiveBL / 2;
     Hw = neck / 6 + 0.5;
     Rb = acrossBack / 2;
     Bb = acrossFront / 2;
     Ad = (bust / 2 + Eb) - (Rb + Bb);
-    Dbust = Math.max(1.5, frontLength - backLength); // Grlawein conformational difference!
+    Dbust = Math.max(1.5, effectiveFL - effectiveBL); // Grlawein conformational difference!
   }
 
   // Posture Adjustments for Bodice
@@ -392,58 +397,68 @@ export function draftBasicBodice(measurements, options = {}) {
   const frontScyeLen = (Da + underarmDrop) * 0.90 + 3.0;
   const totalArmholePerimeter = backScyeLen + frontScyeLen;
 
-  const points = {
-    nape: new Point2D(0, 0),
-    backNeck: new Point2D(Hw * 10, -20),
-    backShoulderTip: new Point2D((Rb + 1.0) * 10, (Da / 3 + shoulderTipDrop) * 10),
-    underarmLevel: new Point2D(0, (Da + underarmDrop) * 10),
-    sideSeamUnderarm: new Point2D((Rb + Ad / 2) * 10, (Da + underarmDrop) * 10),
-    bustApex: new Point2D((Wblock - bustSpan / 2) * 10, bustHeight * 10),
-    cfWaist: new Point2D(Wblock * 10, (backLength + frontLengthOffset) * 10),
-    cbWaist: new Point2D(posture.swayback ? 15 : 0, backLength * 10),
-  };
-
-  const steps = [
-    {
-      stepIndex: 0,
-      titleFa: 'رسم خطوط مبنا و کادر بالاتنه',
-      instructionFa: `کادر بالاتنه به عرض ${(Wblock).toFixed(1)} سانتی‌متر و قد پشت ${(backLength).toFixed(1)} سانتی‌متر رسم شد.`,
-      calculatedValues: { 'عرض کادر': `${(Wblock).toFixed(1)} cm`, 'عمق حلقه': `${(Da).toFixed(1)} cm` },
-      elements: ['nape', 'underarmLevel', 'cbWaist', 'cfWaist'],
-    },
-    {
-      stepIndex: 1,
-      titleFa: 'رسم هلال طوق گردن پشت و سرشانه',
-      instructionFa: `گشادی طوق گردن ${(Hw).toFixed(1)} سانتی‌متر و شیب سرشانه رسم گردید.`,
-      calculatedValues: { 'گشادی طوق گردن': `${(Hw).toFixed(1)} cm`, 'طول سرشانه': `${shoulder} cm` },
-      elements: ['backNeck', 'backShoulderTip'],
-    },
-    {
-      stepIndex: 2,
-      titleFa: 'محاسبه و رسم پنس سرشانه / سینه',
-      instructionFa: `پنس سینه به پهنای ${(Dbust).toFixed(1)} سانتی‌متر رو به مرکز برجستگی سینه رسم شد.`,
-      calculatedValues: { 'پهنای پنس سینه': `${(Dbust).toFixed(1)} cm`, 'فاصله سینه': `${bustSpan} cm` },
-      elements: ['bustApex'],
-    },
-  ];
-
-  // Bodice construction lines & contours
+  // Vertical guideline levels (in mm)
   const underarmYMm = (Da + underarmDrop) * 10;
-  const waistYMm = backLength * 10;
-  const frontWaistYMm = (backLength + frontLengthOffset) * 10;
+  const waistYMm = effectiveBL * 10;
+  const frontWaistYMm = (effectiveBL + frontLengthOffset) * 10;
+  const actualHipDepth = measurements.hipDepth ?? hipDepth;
+  const hipDepthMm = actualHipDepth * 10;
+  const backHipYMm = waistYMm + hipDepthMm;
+  const frontHipYMm = frontWaistYMm + hipDepthMm;
   const blockWidthMm = Wblock * 10;
+  const sideSeamX = (Rb + Ad / 2) * 10;
 
-  // Back dart & waist points
-  const backSideWaistX = (Rb + Ad / 2 - sideSeamSuppression / 2) * 10;
+  // Hip circumference flaring calculation at side seam
+  const Whip = (hip + Eh) / 2;
+  const deltaHip = Whip - Wblock;
+  const hipFlare = Math.max(10, (deltaHip > 0 ? (deltaHip / 2) * 10 : 10));
+  const backSideHipX = sideSeamX + hipFlare;
+  const frontSideHipX = sideSeamX - hipFlare;
+
+  // Back waist suppression & dart geometry
+  const cbIndentMm = posture.swayback ? 20 : 15;
+  const backSideWaistX = sideSeamX - (sideSeamSuppression / 2) * 10;
   const backDartCenterX = Rb * 5;
   const backDartApexY = underarmYMm + 20;
   const backDartHalfW = (backDartWidth * 10) / 2;
+  const backDartBottomY = backHipYMm - 30;
 
-  // Front dart & waist points
-  const frontSideWaistX = (Rb + Ad / 2 + sideSeamSuppression / 2) * 10;
-  const frontDartCenterX = points.bustApex.x;
+  // Front waist-to-hip dart geometry (apex below bust apex, widest at waist, ending 3-5cm above hip line)
+  const frontSideWaistX = sideSeamX + (sideSeamSuppression / 2) * 10;
+  const frontDartCenterX = (Wblock - bustSpan / 2) * 10;
   const frontDartHalfW = (frontDartWidth * 10) / 2;
-  const frontDartApexY = points.bustApex.y + 25;
+  const frontDartApexY = bustHeight * 10 + 25;
+  const frontDartBottomY = frontHipYMm - 40;
+
+  // Back shoulder dart geometry (1.5cm width, 7.5cm depth placed on shoulder seam)
+  const backShoulderTipX = (Rb + 1.0) * 10;
+  const backShoulderTipY = (Da / 3 + shoulderTipDrop) * 10;
+  const backShoulderDx = backShoulderTipX - Hw * 10;
+  const backShoulderDy = backShoulderTipY - (-20);
+  const backShoulderLen = Math.hypot(backShoulderDx, backShoulderDy);
+  const uBackShoulderX = backShoulderLen > 0 ? backShoulderDx / backShoulderLen : 1;
+  const uBackShoulderY = backShoulderLen > 0 ? backShoulderDy / backShoulderLen : 0;
+  const nBackShoulderX = -uBackShoulderY;
+  const nBackShoulderY = uBackShoulderX;
+
+  const backDartDist = Math.min(50, backShoulderLen * 0.4);
+  const backDartCenterOnShoulderX = Hw * 10 + uBackShoulderX * backDartDist;
+  const backDartCenterOnShoulderY = -20 + uBackShoulderY * backDartDist;
+  const backShoulderDartHalfW = 7.5;
+  const backShoulderDartLen = 75.0;
+
+  const backShoulderDart1 = new Point2D(
+    backDartCenterOnShoulderX - uBackShoulderX * backShoulderDartHalfW,
+    backDartCenterOnShoulderY - uBackShoulderY * backShoulderDartHalfW
+  );
+  const backShoulderDart2 = new Point2D(
+    backDartCenterOnShoulderX + uBackShoulderX * backShoulderDartHalfW,
+    backDartCenterOnShoulderY + uBackShoulderY * backShoulderDartHalfW
+  );
+  const backShoulderDartApex = new Point2D(
+    backDartCenterOnShoulderX + nBackShoulderX * backShoulderDartLen,
+    backDartCenterOnShoulderY + nBackShoulderY * backShoulderDartLen
+  );
 
   // Front neck & shoulder points
   const frontNeckX = (Wblock - Hw) * 10;
@@ -453,31 +468,126 @@ export function draftBasicBodice(measurements, options = {}) {
   const frontShoulderTipX = (Rb + Ad + 0.5) * 10;
   const frontShoulderTipY = (Da / 3 + shoulderTipDrop + 1.5) * 10;
 
-  // Construction lines
-  const constructionLines = [
-    { from: new Point2D(0, 0), to: new Point2D(blockWidthMm, 0), label: 'خط گردن / کادر بالایی', type: 'frame' },
-    { from: new Point2D(0, waistYMm), to: new Point2D(blockWidthMm, waistYMm), label: 'خط کمر کادر اولیه', type: 'frame' },
-    { from: new Point2D(0, 0), to: new Point2D(0, waistYMm), label: 'خط مرکزی پشت (CB)', type: 'frame' },
-    { from: new Point2D(blockWidthMm, 0), to: new Point2D(blockWidthMm, frontWaistYMm), label: 'خط مرکزی جلو (CF)', type: 'frame' },
-    { from: new Point2D(0, underarmYMm), to: new Point2D(blockWidthMm, underarmYMm), label: 'خط کف حلقه و سینه', type: 'guide' },
-    { from: new Point2D(Rb * 10, bustHeight * 10), to: new Point2D(blockWidthMm, bustHeight * 10), label: 'خط بلندی سینه', type: 'guide' },
-    { from: new Point2D(Rb * 10, 0), to: new Point2D(Rb * 10, underarmYMm), label: 'خط راهنمای کارور پشت', type: 'guide' },
-    { from: new Point2D((Rb + Ad) * 10, 0), to: new Point2D((Rb + Ad) * 10, underarmYMm), label: 'خط راهنمای کارور جلو', type: 'guide' },
-    { from: new Point2D((Rb + Ad / 2) * 10, underarmYMm), to: new Point2D((Rb + Ad / 2) * 10, waistYMm), label: 'خط عمود پهلو', type: 'axis' },
-    { from: new Point2D(frontDartCenterX, points.bustApex.y), to: new Point2D(frontDartCenterX, frontWaistYMm), label: 'محور ساسون زیر سینه', type: 'axis' },
-    { from: new Point2D(backDartCenterX, underarmYMm), to: new Point2D(backDartCenterX, waistYMm), label: 'محور ساسون پشت', type: 'guide' },
+  // Front concave neckline Bézier control points (dipping smoothly down and in toward CF pit)
+  const neckDx = frontNeckPitX - frontNeckX;
+  const neckDy = frontNeckPitY - frontNeckY;
+  const frontNeckC1X = frontNeckX + neckDx * 0.15;
+  const frontNeckC1Y = frontNeckY + neckDy * 0.55;
+  const frontNeckC2X = frontNeckPitX - neckDx * 0.45;
+  const frontNeckC2Y = frontNeckPitY;
+
+  // Key reference points
+  const points = {
+    nape: new Point2D(0, 0),
+    backNeck: new Point2D(Hw * 10, -20),
+    backShoulderTip: new Point2D(backShoulderTipX, backShoulderTipY),
+    underarmLevel: new Point2D(0, underarmYMm),
+    sideSeamUnderarm: new Point2D(sideSeamX, underarmYMm),
+    bustApex: new Point2D(frontDartCenterX, bustHeight * 10),
+    cfWaist: new Point2D(blockWidthMm, frontWaistYMm),
+    cbWaist: new Point2D(cbIndentMm, waistYMm),
+    cbHip: new Point2D(0, backHipYMm),
+    cfHip: new Point2D(blockWidthMm, frontHipYMm),
+    sideHip: new Point2D(sideSeamX, backHipYMm),
+    sideHipBack: new Point2D(backSideHipX, backHipYMm),
+    sideHipFront: new Point2D(frontSideHipX, frontHipYMm),
+    frontNeck: new Point2D(frontNeckX, frontNeckY),
+    frontNeckPit: new Point2D(frontNeckPitX, frontNeckPitY),
+    frontShoulderTip: new Point2D(frontShoulderTipX, frontShoulderTipY),
+  };
+
+  const steps = [
+    {
+      stepIndex: 0,
+      titleFa: 'رسم خطوط مبنا و کادر بالاتنه تا خط باسن',
+      instructionFa: `کادر بالاتنه به عرض ${(Wblock).toFixed(1)} سانتی‌متر، قد بالاتنه ${(effectiveBL).toFixed(1)} سانتی‌متر و بلندی باسن ${actualHipDepth.toFixed(1)} سانتی‌متر رسم شد.`,
+      calculatedValues: {
+        'عرض کادر': `${(Wblock).toFixed(1)} cm`,
+        'عمق حلقه': `${(Da).toFixed(1)} cm`,
+        'بلندی باسن': `${actualHipDepth.toFixed(1)} cm`,
+      },
+      elements: ['nape', 'underarmLevel', 'cbWaist', 'cfWaist', 'cbHip', 'cfHip'],
+    },
+    {
+      stepIndex: 1,
+      titleFa: 'رسم هلال طوق گردن پشت و سرشانه',
+      instructionFa: `گشادی طوق گردن ${(Hw).toFixed(1)} سانتی‌متر و شیب سرشانه و پنس سرشانه پشت رسم گردید.`,
+      calculatedValues: {
+        'گشادی طوق گردن': `${(Hw).toFixed(1)} cm`,
+        'طول سرشانه': `${shoulder} cm`,
+      },
+      elements: ['backNeck', 'backShoulderTip'],
+    },
+    {
+      stepIndex: 2,
+      titleFa: 'محاسبه و رسم پنس سرشانه / سینه جلو',
+      instructionFa: `پنس سینه جلو به پهنای ${(Dbust).toFixed(1)} سانتی‌متر رو به مرکز برجستگی سینه رسم شد.`,
+      calculatedValues: {
+        'پهنای پنس سینه': `${(Dbust).toFixed(1)} cm`,
+        'فاصله سینه': `${bustSpan} cm`,
+      },
+      elements: ['bustApex'],
+    },
+    {
+      stepIndex: 3,
+      titleFa: 'رسم هلال طوق گردن جلو و حلقه آستین',
+      instructionFa: `هلال مقعر طوق گردن جلو به عمق ${(Hw + 0.5).toFixed(1)} سانتی‌متر و منحنی حلقه آستین پشت و جلو ترسیم شد.`,
+      calculatedValues: {
+        'عمق یقه جلو': `${(Hw + 0.5).toFixed(1)} cm`,
+        'محیط کل حلقه': `${totalArmholePerimeter.toFixed(1)} cm`,
+      },
+      elements: ['frontNeck', 'frontNeckPit', 'sideSeamUnderarm', 'frontShoulderTip'],
+    },
+    {
+      stepIndex: 4,
+      titleFa: 'محاسبه ساسون‌های کمر، باسن و گودی پهلو',
+      instructionFa: `ساسون پشت ${(backDartWidth).toFixed(1)}cm، ساسون بزرگ زیر سینه ${(frontDartWidth).toFixed(1)}cm و گودی پهلو ${(sideSeamSuppression).toFixed(1)}cm تا خط باسن رسم گردید.`,
+      calculatedValues: {
+        'تنگی کل کمر': `${(deltaW).toFixed(1)} cm`,
+        'ساسون زیر سینه': `${(frontDartWidth).toFixed(1)} cm`,
+        'گودی پهلو': `${(sideSeamSuppression).toFixed(1)} cm`,
+      },
+      elements: ['sideHipBack', 'sideHipFront', 'cbWaist'],
+    },
   ];
 
-  // Contours (true cut outline SVG paths for Back and Front bodice pieces)
+  // Construction lines
+  const constructionLines = [
+    // Initial bounding frame (کادر مستطیل اولیه)
+    { from: new Point2D(0, 0), to: new Point2D(blockWidthMm, 0), label: 'خط گردن / کادر بالایی', type: 'frame' },
+    { from: new Point2D(0, waistYMm), to: new Point2D(blockWidthMm, waistYMm), label: 'خط کمر کادر اولیه', type: 'frame' },
+    { from: new Point2D(0, backHipYMm), to: new Point2D(blockWidthMm, backHipYMm), label: 'خط باسن کادر اولیه', type: 'frame' },
+    { from: new Point2D(0, 0), to: new Point2D(0, backHipYMm), label: 'خط مرکزی پشت (CB)', type: 'frame' },
+    { from: new Point2D(blockWidthMm, 0), to: new Point2D(blockWidthMm, frontHipYMm), label: 'خط مرکزی جلو (CF)', type: 'frame' },
+
+    // Distinct horizontal guide levels
+    { from: new Point2D(0, underarmYMm), to: new Point2D(blockWidthMm, underarmYMm), label: 'خط کف حلقه آستین', type: 'guide' },
+    { from: new Point2D(0, waistYMm), to: new Point2D(blockWidthMm, waistYMm), label: 'خط کمر', type: 'guide' },
+    { from: new Point2D(0, backHipYMm), to: new Point2D(blockWidthMm, backHipYMm), label: 'خط باسن', type: 'guide' },
+    { from: new Point2D(Rb * 10, bustHeight * 10), to: new Point2D(blockWidthMm, bustHeight * 10), label: 'خط بلندی سینه', type: 'guide' },
+
+    // Vertical lines
+    { from: new Point2D(0, 0), to: new Point2D(0, backHipYMm), label: 'خط مرکزی پشت (CB)', type: 'axis' },
+    { from: new Point2D(blockWidthMm, 0), to: new Point2D(blockWidthMm, frontHipYMm), label: 'خط مرکزی جلو (CF)', type: 'axis' },
+    { from: new Point2D(sideSeamX, underarmYMm), to: new Point2D(sideSeamX, backHipYMm), label: 'خط پهلو', type: 'axis' },
+    { from: new Point2D(frontDartCenterX, bustHeight * 10), to: new Point2D(frontDartCenterX, frontHipYMm), label: 'محور پنس بزرگ زیر سینه', type: 'axis' },
+    { from: new Point2D(backDartCenterX, underarmYMm), to: new Point2D(backDartCenterX, backHipYMm), label: 'محور پنس کمر پشت', type: 'guide' },
+    { from: new Point2D(Rb * 10, 0), to: new Point2D(Rb * 10, underarmYMm), label: 'خط راهنمای کارور پشت', type: 'guide' },
+    { from: new Point2D((Rb + Ad) * 10, 0), to: new Point2D((Rb + Ad) * 10, underarmYMm), label: 'خط راهنمای کارور جلو', type: 'guide' },
+  ];
+
+  // Contours: closed clean cut outline SVG paths extending from shoulder to hip line
   const backContour = [
     `M ${points.nape.x.toFixed(1)} ${points.nape.y.toFixed(1)}`,
     `Q ${(Hw * 5).toFixed(1)} 0, ${points.backNeck.x.toFixed(1)} ${points.backNeck.y.toFixed(1)}`,
+    `L ${backShoulderDart1.x.toFixed(1)} ${backShoulderDart1.y.toFixed(1)}`,
+    `L ${backShoulderDartApex.x.toFixed(1)} ${backShoulderDartApex.y.toFixed(1)}`,
+    `L ${backShoulderDart2.x.toFixed(1)} ${backShoulderDart2.y.toFixed(1)}`,
     `L ${points.backShoulderTip.x.toFixed(1)} ${points.backShoulderTip.y.toFixed(1)}`,
     `C ${(Rb * 10 + 2).toFixed(1)} ${(points.backShoulderTip.y + 15).toFixed(1)}, ${(Rb * 10).toFixed(1)} ${(points.sideSeamUnderarm.y - 15).toFixed(1)}, ${points.sideSeamUnderarm.x.toFixed(1)} ${points.sideSeamUnderarm.y.toFixed(1)}`,
     `L ${backSideWaistX.toFixed(1)} ${waistYMm.toFixed(1)}`,
-    `L ${(backDartCenterX + backDartHalfW).toFixed(1)} ${waistYMm.toFixed(1)}`,
-    `L ${backDartCenterX.toFixed(1)} ${backDartApexY.toFixed(1)}`,
-    `L ${(backDartCenterX - backDartHalfW).toFixed(1)} ${waistYMm.toFixed(1)}`,
+    `C ${(backSideWaistX + 3).toFixed(1)} ${(waistYMm + hipDepthMm * 0.35).toFixed(1)}, ${(backSideHipX + 2).toFixed(1)} ${(waistYMm + hipDepthMm * 0.75).toFixed(1)}, ${backSideHipX.toFixed(1)} ${backHipYMm.toFixed(1)}`,
+    `L 0.0 ${backHipYMm.toFixed(1)}`,
     `L ${points.cbWaist.x.toFixed(1)} ${points.cbWaist.y.toFixed(1)}`,
     `L ${points.nape.x.toFixed(1)} ${points.nape.y.toFixed(1)}`,
     'Z',
@@ -486,31 +596,53 @@ export function draftBasicBodice(measurements, options = {}) {
   const frontContour = [
     `M ${frontNeckPitX.toFixed(1)} ${frontNeckPitY.toFixed(1)}`,
     `L ${points.cfWaist.x.toFixed(1)} ${points.cfWaist.y.toFixed(1)}`,
-    `L ${(frontDartCenterX + frontDartHalfW).toFixed(1)} ${points.cfWaist.y.toFixed(1)}`,
-    `L ${frontDartCenterX.toFixed(1)} ${frontDartApexY.toFixed(1)}`,
-    `L ${(frontDartCenterX - frontDartHalfW).toFixed(1)} ${points.cfWaist.y.toFixed(1)}`,
-    `L ${frontSideWaistX.toFixed(1)} ${waistYMm.toFixed(1)}`,
+    `L ${points.cfWaist.x.toFixed(1)} ${frontHipYMm.toFixed(1)}`,
+    `L ${frontSideHipX.toFixed(1)} ${frontHipYMm.toFixed(1)}`,
+    `C ${(frontSideHipX - 2).toFixed(1)} ${(frontHipYMm - hipDepthMm * 0.25).toFixed(1)}, ${(frontSideWaistX - 3).toFixed(1)} ${(waistYMm + hipDepthMm * 0.35).toFixed(1)}, ${frontSideWaistX.toFixed(1)} ${waistYMm.toFixed(1)}`,
     `L ${points.sideSeamUnderarm.x.toFixed(1)} ${points.sideSeamUnderarm.y.toFixed(1)}`,
     `C ${(points.sideSeamUnderarm.x + 10).toFixed(1)} ${(points.sideSeamUnderarm.y - 5).toFixed(1)}, ${((Rb + Ad) * 10).toFixed(1)} ${(points.sideSeamUnderarm.y - 20).toFixed(1)}, ${frontShoulderTipX.toFixed(1)} ${frontShoulderTipY.toFixed(1)}`,
     `L ${(frontShoulderTipX + 15).toFixed(1)} ${(frontShoulderTipY - 5).toFixed(1)}`,
     `L ${points.bustApex.x.toFixed(1)} ${points.bustApex.y.toFixed(1)}`,
     `L ${(frontNeckX - 10).toFixed(1)} ${(frontNeckY + 5).toFixed(1)}`,
     `L ${frontNeckX.toFixed(1)} ${frontNeckY.toFixed(1)}`,
-    `Q ${blockWidthMm.toFixed(1)} ${frontNeckY.toFixed(1)}, ${frontNeckPitX.toFixed(1)} ${frontNeckPitY.toFixed(1)}`,
+    `C ${frontNeckC1X.toFixed(1)} ${frontNeckC1Y.toFixed(1)}, ${frontNeckC2X.toFixed(1)} ${frontNeckC2Y.toFixed(1)}, ${frontNeckPitX.toFixed(1)} ${frontNeckPitY.toFixed(1)}`,
     'Z',
   ].join(' ');
 
   const contours = [backContour, frontContour];
 
   const darts = [
-    [new Point2D(backDartCenterX - backDartHalfW, waistYMm), new Point2D(backDartCenterX, backDartApexY), new Point2D(backDartCenterX + backDartHalfW, waistYMm)],
-    [new Point2D(frontDartCenterX - frontDartHalfW, points.cfWaist.y), new Point2D(frontDartCenterX, frontDartApexY), new Point2D(frontDartCenterX + frontDartHalfW, points.cfWaist.y)],
-    [new Point2D(frontShoulderTipX + 15, frontShoulderTipY - 5), points.bustApex, new Point2D(frontNeckX - 10, frontNeckY + 5)],
+    // Back waist-to-hip dart
+    [
+      new Point2D(backDartCenterX, backDartApexY),
+      new Point2D(backDartCenterX - backDartHalfW, waistYMm),
+      new Point2D(backDartCenterX, backDartBottomY),
+      new Point2D(backDartCenterX + backDartHalfW, waistYMm),
+    ],
+    // Front waist-to-hip dart
+    [
+      new Point2D(frontDartCenterX, frontDartApexY),
+      new Point2D(frontDartCenterX - frontDartHalfW, frontWaistYMm),
+      new Point2D(frontDartCenterX, frontDartBottomY),
+      new Point2D(frontDartCenterX + frontDartHalfW, frontWaistYMm),
+    ],
+    // Front shoulder bust dart
+    [
+      new Point2D(frontShoulderTipX + 15, frontShoulderTipY - 5),
+      points.bustApex,
+      new Point2D(frontNeckX - 10, frontNeckY + 5),
+    ],
+    // Back shoulder dart
+    [
+      backShoulderDart1,
+      backShoulderDartApex,
+      backShoulderDart2,
+    ],
   ];
 
   const grainlines = [
-    { from: new Point2D(Rb * 5, 50), to: new Point2D(Rb * 5, waistYMm - 30) },
-    { from: new Point2D(frontDartCenterX, points.bustApex.y + 30), to: new Point2D(frontDartCenterX, frontWaistYMm - 30) },
+    { from: new Point2D(Rb * 5, 50), to: new Point2D(Rb * 5, backHipYMm - 30) },
+    { from: new Point2D(frontDartCenterX, points.bustApex.y + 30), to: new Point2D(frontDartCenterX, frontHipYMm - 30) },
   ];
 
   return {
@@ -532,7 +664,7 @@ export function draftBasicBodice(measurements, options = {}) {
     totalArmholePerimeter,
     points,
     steps,
-    boundingBox: { minX: 0, minY: -20, width: Wblock * 10, height: (backLength + frontLengthOffset) * 10 + 20 },
+    boundingBox: { minX: 0, minY: -20, width: Wblock * 10, height: (effectiveBL + frontLengthOffset + actualHipDepth) * 10 + 20 },
     constructionLines,
     contours,
     grainlines,
@@ -832,6 +964,7 @@ export function draftBasicSleeve(bodiceResult, sleeveParams = {}) {
 
 /**
  * 4. BASIC TROUSER ENGINE
+ * Standard Müller & Sohn Tailoring Method (Front & Back Panels Side-by-Side)
  */
 export function draftBasicTrouser(measurements, options = {}) {
   const {
@@ -874,17 +1007,68 @@ export function draftBasicTrouser(measurements, options = {}) {
   const yKneeMm = yKnee * 10;
   const yHemMm = trouserLength * 10;
   const yCrotchMm = crotchDepth * 10;
+  const yHipMm = Math.max(0, (crotchDepth - 8.5) * 10);
 
+  // Front panel horizontal references
+  const xCF = ExtFront * 10;
+  const xSideHip = (ExtFront + WfrontHip) * 10;
+  const frontWaistSideX = xCreaseMm + ((WfrontHip - ExtFront) / 2 + 1) * 10;
+  const frontKneeLeftX = xCreaseMm - (kneeWidth / 2) * 10;
+  const frontKneeRightX = xCreaseMm + (kneeWidth / 2) * 10;
+  const frontHemLeftX = xCreaseMm - (hemWidth / 2) * 10;
+  const frontHemRightX = xCreaseMm + (hemWidth / 2) * 10;
+  const frameWidthMm = (ExtFront + WfrontHip) * 10;
+
+  // Horizontal offset for Back Panel (distinct, side-by-side layout)
+  // Ensures clean gap between front hip/side seam and back crotch extension
+  const panelGap = 80; // 80mm gap
+  const frontMaxX = Math.max(xSideHip, frontWaistSideX, frontKneeRightX);
+  const backOffsetX = frontMaxX + panelGap + ExtBack * 10;
+  const backCreaseMm = xCreaseMm + backOffsetX;
+
+  // Back panel reference coordinates
+  const backCrotchTipX = -ExtBack * 10 + backOffsetX;
+  const backCrotchTipY = yCrotchMm + 10; // Drops 10mm below crotch level
+  const backKneeLeftX = backCreaseMm - (kneeWidth / 2 + 1.0) * 10;
+  const backKneeRightX = backCreaseMm + (kneeWidth / 2 + 1.0) * 10;
+  const backHemLeftX = backCreaseMm - (hemWidth / 2 + 1.0) * 10;
+  const backHemRightX = backCreaseMm + (hemWidth / 2 + 1.0) * 10;
+
+  // CB waist extension (بلندی فاق پشت: point 46 elevated above front waist by 3.5cm)
+  const backWaistCBX = backCreaseMm - 25;
+  const backWaistCBY = -35; // 3.5cm (35mm) elevated for seating posture
+  const backWaistSideX = backCreaseMm + ((WfrontHip - ExtFront) / 2 + 3.5) * 10;
+  const backWaistSideY = 0;
+  const backHipSideX = (ExtFront + WfrontHip + 2.0) * 10 + backOffsetX;
+
+  // Points dictionary (preserving all existing keys and invariants)
   const points = {
-    frontCreaseWaist: new Point2D(xCreaseMm, 0),
-    frontCrotchTip: new Point2D(0, yCrotchMm),
-    frontKneeLeft: new Point2D(xCreaseMm - (kneeWidth / 2) * 10, yKneeMm),
-    frontKneeRight: new Point2D(xCreaseMm + (kneeWidth / 2) * 10, yKneeMm),
-    frontHemLeft: new Point2D(xCreaseMm - (hemWidth / 2) * 10, yHemMm),
-    frontHemRight: new Point2D(xCreaseMm + (hemWidth / 2) * 10, yHemMm),
-    backCrotchTip: new Point2D(-ExtBack * 10, yCrotchMm + 10), // Drops 10mm below front crotch
-    backKneeLeft: new Point2D(xCreaseMm - (kneeWidth / 2 + 1.0) * 10, yKneeMm),
-    backKneeRight: new Point2D(xCreaseMm + (kneeWidth / 2 + 1.0) * 10, yKneeMm),
+    // Front Panel Points
+    frontCreaseWaist: new Point2D(xCreaseMm, 0, 'خط اتو کمر پیش'),
+    frontCrotchTip: new Point2D(0, yCrotchMm, 'نقاب فاق پیش'),
+    frontKneeLeft: new Point2D(frontKneeLeftX, yKneeMm, 'زانو داخل پیش'),
+    frontKneeRight: new Point2D(frontKneeRightX, yKneeMm, 'زانو پهلو پیش'),
+    frontHemLeft: new Point2D(frontHemLeftX, yHemMm, 'دمپا داخل پیش'),
+    frontHemRight: new Point2D(frontHemRightX, yHemMm, 'دمپا پهلو پیش'),
+    frontWaistCF: new Point2D(xCF, 0, 'مرکز جلو کمر (CF)'),
+    frontWaistSide: new Point2D(frontWaistSideX, 0, 'پهلو کمر پیش'),
+    frontHipSide: new Point2D(xSideHip, yHipMm, 'باسن پهلو پیش'),
+    frontCreaseHem: new Point2D(xCreaseMm, yHemMm, 'خط اتو دمپا پیش'),
+    frontDartTip: new Point2D(xCreaseMm, 90, 'نوک پنس پیش'),
+    flyFacingTop: new Point2D(xCF - 35, 0, 'سجاف زیپ بالا'),
+    flyFacingBottom: new Point2D(xCF - 35, 170, 'سجاف زیپ پایین'),
+
+    // Back Panel Points (offset horizontally)
+    backCrotchTip: new Point2D(backCrotchTipX, backCrotchTipY, 'نقاب فاق پشت'),
+    backKneeLeft: new Point2D(backKneeLeftX, yKneeMm, 'زانو داخل پشت'),
+    backKneeRight: new Point2D(backKneeRightX, yKneeMm, 'زانو پهلو پشت'),
+    backHemLeft: new Point2D(backHemLeftX, yHemMm, 'دمپا داخل پشت'),
+    backHemRight: new Point2D(backHemRightX, yHemMm, 'دمپا پهلو پشت'),
+    backCreaseWaist: new Point2D(backCreaseMm, 0, 'خط اتو کمر پشت'),
+    backCreaseHem: new Point2D(backCreaseMm, yHemMm, 'خط اتو دمپا پشت'),
+    backWaistCB: new Point2D(backWaistCBX, backWaistCBY, 'بلندی فاق پشت (نقطه ۴۶)'),
+    backWaistSide: new Point2D(backWaistSideX, backWaistSideY, 'پهلو کمر پشت'),
+    backHipSide: new Point2D(backHipSideX, yHipMm, 'باسن پهلو پشت'),
   };
 
   // Inseam measurements
@@ -893,52 +1077,82 @@ export function draftBasicTrouser(measurements, options = {}) {
   // Back inseam is tailored 12mm shorter to allow stretch-bias molding
   const backInseamTarget = frontInseamUpper - 12;
 
-  const steps = [
-    {
-      stepIndex: 0,
-      titleFa: 'رسم خط فاق، خط اتو و خط زانو',
-      instructionFa: `بلندی فاق ${(crotchDepth).toFixed(1)} سانتی‌متر و خط اتو در مرکز کادر شلوار رسم گردید.`,
-      calculatedValues: { 'بلندی فاق': `${crotchDepth} cm`, 'خط اتو': `${(xCrease).toFixed(1)} cm` },
-      elements: ['frontCreaseWaist', 'frontCrotchTip'],
-    },
-    {
-      stepIndex: 1,
-      titleFa: 'رسم نقاب فاق جلو و فاق پشت',
-      instructionFa: `نقاب فاق جلو ${(ExtFront).toFixed(1)} سانتی‌متر و نقاب فاق پشت ${(ExtBack).toFixed(1)} سانتی‌متر محاسبه شد.`,
-      calculatedValues: { 'نقاب فاق جلو': `${(ExtFront).toFixed(1)} cm`, 'نقاب فاق پشت': `${(ExtBack).toFixed(1)} cm` },
-      elements: ['frontCrotchTip', 'backCrotchTip'],
-    },
+  // Darts
+  // Front waist dart: centered on crease line
+  const frontDart = [
+    new Point2D(xCreaseMm - 10, 0),
+    new Point2D(xCreaseMm, 90),
+    new Point2D(xCreaseMm + 10, 0),
   ];
 
-  const yHipMm = Math.max(0, (crotchDepth - 8.5) * 10);
-  const xCF = ExtFront * 10;
-  const xSideHip = (ExtFront + WfrontHip) * 10;
-  const frontWaistSideX = xCreaseMm + ((WfrontHip - ExtFront) / 2 + 1) * 10;
+  // Back waist dart: centered between CB waist and side waist
+  const backDartMidX = (backWaistCBX + backWaistSideX) / 2;
+  const backDartMidY = (backWaistCBY + backWaistSideY) / 2;
+  const backDart = [
+    new Point2D(backDartMidX - 12.5, backDartMidY),
+    new Point2D(backDartMidX, backDartMidY + 100),
+    new Point2D(backDartMidX + 12.5, backDartMidY),
+  ];
+  points.backDartTip = new Point2D(backDartMidX, backDartMidY + 100, 'نوک پنس پشت');
 
-  // Back trouser reference points
-  const backWaistCBX = xCreaseMm - 20;
-  const backWaistCBY = -25;
-  const backWaistSideX = xCreaseMm + ((WfrontHip - ExtFront) / 2 + 3.5) * 10;
-  const backWaistSideY = 0;
-  const backHipSideX = (ExtFront + WfrontHip + 2.0) * 10;
-  const backHemLeftX = xCreaseMm - (hemWidth / 2 + 1.0) * 10;
-  const backHemRightX = xCreaseMm + (hemWidth / 2 + 1.0) * 10;
+  const darts = [frontDart, backDart];
 
-  // Initial rectangular frame width and bounds
-  const frameWidthMm = (ExtFront + WfrontHip) * 10;
+  // Grainlines
+  const grainlines = [
+    { from: new Point2D(xCreaseMm, 20), to: new Point2D(xCreaseMm, yHemMm - 20) },
+    { from: new Point2D(backCreaseMm, 20), to: new Point2D(backCreaseMm, yHemMm - 20) },
+  ];
 
   // Construction lines
   const constructionLines = [
-    { from: new Point2D(0, 0), to: new Point2D(frameWidthMm, 0), label: 'خط کمر کادر اولیه', type: 'frame' },
-    { from: new Point2D(0, yHemMm), to: new Point2D(frameWidthMm, yHemMm), label: 'خط لبه دمپا کادر', type: 'frame' },
-    { from: new Point2D(0, 0), to: new Point2D(0, yHemMm), label: 'خط مبنای پیش (راستای فاق)', type: 'frame' },
-    { from: new Point2D(frameWidthMm, 0), to: new Point2D(frameWidthMm, yHemMm), label: 'خط مبنای پهلو', type: 'frame' },
-    { from: new Point2D(-ExtBack * 10, yHipMm), to: new Point2D(backHipSideX, yHipMm), label: 'خط باسن', type: 'guide' },
-    { from: new Point2D(-ExtBack * 10, yCrotchMm), to: new Point2D(backHipSideX, yCrotchMm), label: 'خط فاق', type: 'guide' },
+    // --- Front Panel Frame (کادر مستطیل پیش شلوار) ---
+    { from: new Point2D(0, 0), to: new Point2D(frameWidthMm, 0), label: 'خط کمر کادر اولیه پیش', type: 'frame' },
+    { from: new Point2D(0, yHemMm), to: new Point2D(frameWidthMm, yHemMm), label: 'خط لبه دمپا کادر پیش', type: 'frame' },
+    { from: new Point2D(0, 0), to: new Point2D(0, yHemMm), label: 'خط مبنای فاق پیش', type: 'frame' },
+    { from: new Point2D(frameWidthMm, 0), to: new Point2D(frameWidthMm, yHemMm), label: 'خط مبنای پهلو پیش', type: 'frame' },
+
+    // --- Back Panel Frame (کادر مستطیل پشت شلوار) ---
+    { from: new Point2D(backCrotchTipX, 0), to: new Point2D(backHipSideX, 0), label: 'خط کمر کادر اولیه پشت', type: 'frame' },
+    { from: new Point2D(backCrotchTipX, yHemMm), to: new Point2D(backHipSideX, yHemMm), label: 'خط لبه دمپا کادر پشت', type: 'frame' },
+    { from: new Point2D(backCrotchTipX, 0), to: new Point2D(backCrotchTipX, yHemMm), label: 'خط مبنای فاق پشت', type: 'frame' },
+    { from: new Point2D(backHipSideX, 0), to: new Point2D(backHipSideX, yHemMm), label: 'خط مبنای پهلو پشت', type: 'frame' },
+
+    // --- Panel Title Badges / Axes ---
+    { from: new Point2D(xCreaseMm, -20), to: new Point2D(xCreaseMm, 0), label: 'پیش شلوار (جلو)', type: 'axis' },
+    { from: new Point2D(backCreaseMm, -20), to: new Point2D(backCreaseMm, 0), label: 'پشت شلوار', type: 'axis' },
+
+    // --- Vertical Crease / Balance Axes (خط اتو و راستای پارچه) ---
+    { from: new Point2D(xCreaseMm, 0), to: new Point2D(xCreaseMm, yHemMm), label: 'خط اتو و راستای پارچه (پیش)', type: 'axis' },
+    { from: new Point2D(backCreaseMm, backWaistCBY), to: new Point2D(backCreaseMm, yHemMm), label: 'خط اتو و راستای پارچه (پشت)', type: 'axis' },
+
+    // --- Vertical CF and CB guides ---
+    { from: new Point2D(xCF, 0), to: new Point2D(xCF, yCrotchMm), label: 'خط عمود فاق پیش (CF)', type: 'guide' },
+    { from: new Point2D(backWaistCBX, 0), to: new Point2D(backWaistCBX, backWaistCBY), label: 'بلندی فاق پشت (نقطه ۴۶)', type: 'guide' },
+
+    // --- Horizontal Guide Levels: Front Panel ---
+    { from: new Point2D(0, yHipMm), to: new Point2D(xSideHip, yHipMm), label: 'خط باسن', type: 'guide' },
+    { from: new Point2D(0, yCrotchMm), to: new Point2D(xSideHip, yCrotchMm), label: 'خط فاق', type: 'guide' },
     { from: new Point2D(xCreaseMm - (kneeWidth / 2 + 2) * 10, yKneeMm), to: new Point2D(xCreaseMm + (kneeWidth / 2 + 2) * 10, yKneeMm), label: 'خط زانو', type: 'guide' },
-    { from: new Point2D(xCreaseMm - (hemWidth / 2 + 2) * 10, yHemMm), to: new Point2D(xCreaseMm + (hemWidth / 2 + 2) * 10, yHemMm), label: 'خط لبه دمپا', type: 'guide' },
-    { from: new Point2D(xCreaseMm, 0), to: new Point2D(xCreaseMm, yHemMm), label: 'خط اتو و تعادل (راستای پارچه)', type: 'axis' },
-    { from: new Point2D(xCF, 0), to: new Point2D(xCF, yCrotchMm), label: 'خط عمود فاق پیش', type: 'guide' },
+    { from: new Point2D(xCreaseMm - (hemWidth / 2 + 2) * 10, yHemMm), to: new Point2D(xCreaseMm + (hemWidth / 2 + 2) * 10, yHemMm), label: 'خط دمپا', type: 'guide' },
+
+    // --- Horizontal Guide Levels: Back Panel ---
+    { from: new Point2D(backCrotchTipX, yHipMm), to: new Point2D(backHipSideX, yHipMm), label: 'خط باسن پشت', type: 'guide' },
+    { from: new Point2D(backCrotchTipX, yCrotchMm), to: new Point2D(backHipSideX, yCrotchMm), label: 'خط فاق پشت', type: 'guide' },
+    { from: new Point2D(backCreaseMm - (kneeWidth / 2 + 3) * 10, yKneeMm), to: new Point2D(backCreaseMm + (kneeWidth / 2 + 3) * 10, yKneeMm), label: 'خط زانو پشت', type: 'guide' },
+    { from: new Point2D(backCreaseMm - (hemWidth / 2 + 3) * 10, yHemMm), to: new Point2D(backCreaseMm + (hemWidth / 2 + 3) * 10, yHemMm), label: 'خط دمپا پشت', type: 'guide' },
+
+    // --- Fly Facing (سجاف و نقاب زیپ) ---
+    { from: new Point2D(xCF - 35, 0), to: new Point2D(xCF - 35, 170), label: 'سجاف و نقاب زیپ', type: 'guide' },
+    { from: new Point2D(xCF - 35, 0), to: new Point2D(xCF, 0), label: 'نقاب زیپ', type: 'guide' },
+    { from: new Point2D(xCF - 35, 170), to: new Point2D(xCF, 200), label: 'انحنای نقاب زیپ', type: 'guide' },
+
+    // --- Front Waist Dart Guides ---
+    { from: new Point2D(xCreaseMm - 10, 0), to: new Point2D(xCreaseMm, 90), label: 'پنس کمر پیش', type: 'guide' },
+    { from: new Point2D(xCreaseMm + 10, 0), to: new Point2D(xCreaseMm, 90), label: 'پنس کمر پیش', type: 'guide' },
+
+    // --- Back Waist Dart Guides ---
+    { from: new Point2D(backDartMidX - 12.5, backDartMidY), to: new Point2D(backDartMidX, backDartMidY + 100), label: 'پنس کمر پشت', type: 'guide' },
+    { from: new Point2D(backDartMidX + 12.5, backDartMidY), to: new Point2D(backDartMidX, backDartMidY + 100), label: 'پنس کمر پشت', type: 'guide' },
   ];
 
   // Contours (true cut outline SVG paths for Front and Back trouser pieces)
@@ -967,21 +1181,51 @@ export function draftBasicTrouser(measurements, options = {}) {
     `L ${backHemLeftX.toFixed(1)} ${yHemMm.toFixed(1)}`,
     `L ${points.backKneeLeft.x.toFixed(1)} ${points.backKneeLeft.y.toFixed(1)}`,
     `Q ${(points.backKneeLeft.x - 6).toFixed(1)} ${(yCrotchMm + (yKneeMm - yCrotchMm) * 0.45).toFixed(1)}, ${points.backCrotchTip.x.toFixed(1)} ${points.backCrotchTip.y.toFixed(1)}`,
-    `C ${(points.backCrotchTip.x + 10).toFixed(1)} ${(yCrotchMm - 10).toFixed(1)}, ${(xCF - 10).toFixed(1)} ${(yHipMm + 10).toFixed(1)}, ${backWaistCBX.toFixed(1)} ${backWaistCBY.toFixed(1)}`,
+    `C ${(points.backCrotchTip.x + 40).toFixed(1)} ${(yCrotchMm - 5).toFixed(1)}, ${(backWaistCBX - 15).toFixed(1)} ${(yHipMm + 20).toFixed(1)}, ${backWaistCBX.toFixed(1)} ${backWaistCBY.toFixed(1)}`,
     'Z',
   ].join(' ');
 
   const contours = [frontContour, backContour];
 
-  const backDartX = (backWaistCBX + backWaistSideX) / 2;
-  const backDartY = (backWaistCBY + backWaistSideY) / 2;
-  const darts = [
-    [new Point2D(backDartX - 10, backDartY), new Point2D(backDartX, backDartY + 80), new Point2D(backDartX + 10, backDartY)],
+  const steps = [
+    {
+      stepIndex: 0,
+      titleFa: 'کادربندی مستطیل اولیه و خطوط تراز (فاق، زانو و دمپا)',
+      instructionFa: `بلندی فاق ${(crotchDepth).toFixed(1)} سانتی‌متر و خط اتو در مرکز کادر شلوار پیش (${(xCrease).toFixed(1)} سانتی‌متر) تعیین شد.`,
+      calculatedValues: { 'بلندی فاق': `${crotchDepth} cm`, 'خط اتو': `${(xCrease).toFixed(1)} cm`, 'خط زانو': `${(yKnee).toFixed(1)} cm` },
+      elements: ['frontCreaseWaist', 'frontCrotchTip', 'frontCreaseHem'],
+    },
+    {
+      stepIndex: 1,
+      titleFa: 'محاسبه نقاب فاق پیش و نقاب فاق پشت',
+      instructionFa: `نقاب فاق جلو ${(ExtFront).toFixed(1)} سانتی‌متر و نقاب فاق پشت ${(ExtBack).toFixed(1)} سانتی‌متر محاسبه گردید.`,
+      calculatedValues: { 'نقاب فاق جلو': `${(ExtFront).toFixed(1)} cm`, 'نقاب فاق پشت': `${(ExtBack).toFixed(1)} cm` },
+      elements: ['frontCrotchTip', 'backCrotchTip'],
+    },
+    {
+      stepIndex: 2,
+      titleFa: 'رسم خطوط پیش شلوار (خط اتو، زانو، دمپا، نقاب زیپ و پنس)',
+      instructionFa: `عرض زانو ${(kneeWidth).toFixed(1)} سانتی‌متر و عرض دمپا ${(hemWidth).toFixed(1)} سانتی‌متر متقارن حول خط اتو رسم شده و سجاف زیپ به عرض ۳.۵ سانتی‌متر اضافه شد.`,
+      calculatedValues: { 'عرض زانو پیش': `${kneeWidth} cm`, 'عرض دمپا پیش': `${hemWidth} cm`, 'پهنای سجاف زیپ': '3.5 cm' },
+      elements: ['frontKneeLeft', 'frontKneeRight', 'frontHemLeft', 'frontHemRight', 'frontDartTip', 'flyFacingTop', 'flyFacingBottom'],
+    },
+    {
+      stepIndex: 3,
+      titleFa: 'کادربندی قطعه پشت شلوار و بلندی فاق پشت (نقطه ۴۶)',
+      instructionFa: `قطعه پشت شلوار در کنار پیش کادربندی شده و خط کمر پشت به میزان ۳.۵ سانتی‌متر برای فرم نشستن اندام بالا کشیده شد (نقطه ۴۶).`,
+      calculatedValues: { 'بلندی فاق پشت': '3.5 cm', 'شیب خط وسط پشت': '2.5 cm' },
+      elements: ['backWaistCB', 'backWaistSide', 'backCreaseWaist', 'backCreaseHem'],
+    },
+    {
+      stepIndex: 4,
+      titleFa: 'تکمیل انحنای فاق پشت، درز زیر پا، پهلو و پنس کمر پشت',
+      instructionFa: `انحنای عمیق فاق پشت با افت ۱۰ میلی‌متری رسم گردید و طول درز داخل پای پشت ۱۲ میلی‌متر کوتاه‌تر جهت خرد و اتوکاری لحاظ شد.`,
+      calculatedValues: { 'درز داخل پای پشت': `${(backInseamTarget).toFixed(1)} mm`, 'افت فاق پشت': '10 mm' },
+      elements: ['backCrotchTip', 'backKneeLeft', 'backKneeRight', 'backHemLeft', 'backHemRight', 'backDartTip'],
+    },
   ];
 
-  const grainlines = [
-    { from: new Point2D(xCreaseMm, 20), to: new Point2D(xCreaseMm, yHemMm - 20) },
-  ];
+  const totalWidth = Math.ceil(backHipSideX + 40);
 
   return {
     blockType: 'TROUSER',
@@ -997,7 +1241,7 @@ export function draftBasicTrouser(measurements, options = {}) {
     backInseamTarget,
     points,
     steps,
-    boundingBox: { minX: -ExtBack * 10, minY: 0, width: (WfrontHip + ExtFront + ExtBack) * 10 + 20, height: yHemMm + 20 },
+    boundingBox: { minX: 0, minY: -40, width: totalWidth, height: yHemMm + 60 },
     constructionLines,
     contours,
     grainlines,
