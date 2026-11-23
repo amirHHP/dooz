@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { prisma } from '@/lib/db';
 import { MarketplacePattern, SEEDED_PATTERNS } from '@/types/marketplace';
 import { resolvePatternImage } from '@/lib/pattern-image';
 import { MarketplaceFilterBar } from '@/components/marketplace/filter-bar';
 import { PatternCard } from '@/components/marketplace/pattern-card';
-import { ShoppingBag, Sparkles, SlidersHorizontal } from 'lucide-react';
+import { ShoppingBag, Sparkles } from 'lucide-react';
 
 interface MarketplacePageProps {
   searchParams: Promise<{
@@ -110,17 +110,17 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
       </div>
 
       {/* Filter Bar Component */}
-      <MarketplaceFilterBar
-        filters={{
-          category,
-          method,
-          difficulty,
-          isFree: isFree === 'true' ? true : isFree === 'false' ? false : undefined,
-          q,
-        }}
-        onFilterChange={() => {}}
-        onReset={() => {}}
-      />
+      <Suspense fallback={<div className="w-full bg-card border rounded-2xl p-5 h-44 animate-pulse" />}>
+        <MarketplaceFilterBar
+          filters={{
+            category,
+            method,
+            difficulty,
+            isFree: isFree === 'true' ? true : isFree === 'false' ? false : undefined,
+            q,
+          }}
+        />
+      </Suspense>
 
       {/* Patterns Grid */}
       {patterns.length === 0 ? (
